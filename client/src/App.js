@@ -1,26 +1,27 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import { accessToken } from './spotify';
 
 function App() {
   //initialize states
-  const [data, setData] = useState('');
+  const [token, setToken] = useState('');
 
-  // get client id from server
+  // everytime user access localhost:3000 (sign in), set the token
   useEffect(() => {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
-
-    console.log(accessToken);
-    console.log(refreshToken);
+    setToken(accessToken);
   }, []);
 
   /* if no token, show login, if token, show logout */
   return (
-    <a href='http://localhost:8000/login'>
-      Login to Spotify
-    </a>
+    <div>
+      {!token ? 
+        <a href="http://localhost:8000/login">
+          Log in to Spotify
+        </a>
+        : 
+        <h1>Logged in!</h1>
+      }
+    </div>
   )
 }
 

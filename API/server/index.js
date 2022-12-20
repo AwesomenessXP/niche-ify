@@ -15,6 +15,7 @@ app.get("/api", (req, res) => {
   res.json({ client_id: `${process.env.CLIENT_ID}`});
 });
 
+// generate random code for the state
 const generateRandomString = length => {
   let text = '';
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -24,10 +25,9 @@ const generateRandomString = length => {
   return text;
 };
 
-
-// const CLIENT_ID = "084112fb2acf4fa38335818cb7093f58";
-const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 const stateKey = 'spotify_auth_state';
+
+// endpoint that redirects to spotify page for user authentication
 
 app.get('/login', (req, res) => {
 
@@ -39,14 +39,15 @@ app.get('/login', (req, res) => {
   const queryParams = querystring.stringify({
     client_id: process.env.CLIENT_ID,
     response_type: 'code',
-    redirect_uri: process.env.REDIRECT_URI,
+    redirect_uri: process.env.REDIRECT_URI, // redirects to "/callback"
     state: state,
     scope: scope,
   });
 
   res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
 });
-
+// endpoint that fetches access token and refresh token 
+// on success, redirect to client 
 app.get('/callback', (req, res) => {
   const code = req.query.code || null;
 
@@ -60,19 +61,22 @@ app.get('/callback', (req, res) => {
     }),
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${new Buffer.from(`${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`).toString('base64')}`,
+      Authorization: `Basic ${new Buffer.from(`${process.env.CLIENT_ID}:`+
+        `${process.env.CLIENT_SECRET}`).toString('base64')}`,
     },
   })
   .then(response => {
     if (response.status === 200) {
-      const { access_token, refresh_token } = response.data;
+      const { access_token, refresh_token, expires_in } = response.data;
 
       const queryParams = querystring.stringify({
         access_token,
         refresh_token,
+        expires_in,
       });
 
-      res.redirect(`http://localhost:3000/?${queryParams}`);
+      // we can access the query params on client side through the URL
+      res.redirect(`http://localhost:3000/?${queryParams}`); 
 
     } else {
       res.redirect(`/?${querystring.stringify({ error: 'invalid_token' })}`);
@@ -83,8 +87,10 @@ app.get('/callback', (req, res) => {
   });
 });
 
+// endpoint that fetches new access token from spotify, send to client
+// client will request this endpoint when old access token expires
 app.get('/refresh_token', (req, res) => {
-  const { refresh_token } = req.query;
+  const { refresh_token } = req.query; // get "refresh_token" from query string
 
   axios({
     method: 'post',
@@ -95,7 +101,8 @@ app.get('/refresh_token', (req, res) => {
     }),
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${new Buffer.from(`${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`).toString('base64')}`,
+      Authorization: `Basic ${new Buffer.from(`${process.env.CLIENT_ID}:`+
+        `${process.env.CLIENT_SECRET}`).toString('base64')}`,
     },
   })
     .then(response => {

@@ -4,7 +4,10 @@
   "description": "Niche-ify your spotify playlists by replacing all your mainstream artists with niche, underground artists in the same genre.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "cd API && nodemon index.js",
+    "client": "cd client npm start",
+    "start": "concurrently --kill-others-on-fail \"cd API && npm run start\" \"cd client && npm start\""
   },
   "repository": {
     "type": "git",
@@ -16,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/AwesomenessXP/niche-ify/issues"
   },
-  "homepage": "https://github.com/AwesomenessXP/niche-ify#readme"
+  "homepage": "https://github.com/AwesomenessXP/niche-ify#readme",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
 }
