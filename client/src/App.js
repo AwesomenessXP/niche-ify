@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import './App.css';
 import { accessToken, logout } from './spotify';
 
 function App() {
