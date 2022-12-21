@@ -24,35 +24,45 @@ const getAccessToken = () => {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   const queryParams = {
-    accessToken: urlParams.get('access_token'),
-    refreshToken: urlParams.get('refresh_token'),
-    expiresIn: urlParams.get('expires_in'),
+    access_token: urlParams.get('access_token'),
+    refresh_token: urlParams.get('refresh_token'),
+    expires_in: urlParams.get('expires_in'),
   }
 
-  // the first time the user visits, store access tk and refresh tk
-  if (queryParams.accessToken) { // use for ... in for maps
-    local_storage.setItem(LOCAL_STORAGE_KEYS.access_tk, queryParams.accessToken);
-    
-    // set timestamp
-    local_storage.setItem(LOCAL_STORAGE_KEYS.timestamp, Date.now());
-
-    // return access token to user
-    return local_storage.get(LOCAL_STORAGE_VALUES.access_tk);
-  }
+  console.log(queryParams.access_token);
+  console.log(queryParams.refresh_token);
+  console.log(queryParams.expires_in);
 
   // check if theres an error in query
   const hasError = urlParams.get('error'); 
 
-    // next time user visits, get refresh token from spotify
-  if (LOCAL_STORAGE_VALUES.access_tk || hasError || hasTokenExpired()) {
+  // next time user visits, get refresh token from spotify
+  if (hasError || hasTokenExpired() ||
+    LOCAL_STORAGE_VALUES.access_tk === 'undefined') {
     refreshToken();
   }
 
-  // default case: return the access token
-  return LOCAL_STORAGE_VALUES.access_tk;
-}
+    // If there is a valid access token in localStorage, use that
+  if (LOCAL_STORAGE_VALUES.access_tk &&
+    LOCAL_STORAGE_VALUES.access_tk !== 'undefined') {
+    console.log('lol hey')
+    return LOCAL_STORAGE_VALUES.access_tk;
+  }
 
-export const accessToken = getAccessToken();
+  // the first time the user visits, store access tk and refresh tk
+  if (queryParams[LOCAL_STORAGE_KEYS.access_tk]) { // use for ... in for maps
+    for (const query in queryParams) {
+      local_storage.setItem(query, queryParams[query]);
+    }
+    // set timestamp
+    local_storage.setItem(LOCAL_STORAGE_KEYS.timestamp, Date.now());
+
+    // return access token to user
+    return queryParams[LOCAL_STORAGE_KEYS.access_tk];
+  }
+
+  return false;
+}
 
 /**
  * Checks if the access token has expired, given timestamp and when it expires
@@ -66,6 +76,16 @@ const hasTokenExpired = () => {
   // convert timestamp into an integer
   const millisecondsPassed = Date.now() - Number(timestamp);
   return (millisecondsPassed / 1000) > Number(expires_in);
+}
+
+export const logout = () => {
+  // clear localStorage
+  for (const property in LOCAL_STORAGE_KEYS) {
+    local_storage.removeItem(LOCAL_STORAGE_KEYS[property]);
+  }
+
+  // navigate to homepage
+  window.location = window.location.origin;
 }
 
 /**
@@ -92,7 +112,7 @@ const refreshToken = async () => {
 
     // store refresh token in local storage
     // update/set timestamp
-    local_storage.setItem(LOCAL_STORAGE_KEYS.access_tk, data.refresh_token);
+    local_storage.setItem(LOCAL_STORAGE_KEYS.refresh_tk, data.refresh_token);
     local_storage.setItem(LOCAL_STORAGE_KEYS.timestamp, Date.now());
 
     // reload page for localstorage updates to be reflected
@@ -102,12 +122,7 @@ const refreshToken = async () => {
   }
 }
 
-export const logout = () => {
-  // clear localStorage
-  for (const property in LOCAL_STORAGE_KEYS) {
-    local_storage.removeItem(LOCAL_STORAGE_KEYS[property]);
-  }
+export const accessToken = getAccessToken();
 
-  // navigate to homepage
-  window.location = window.location.origin;
-}
+
+

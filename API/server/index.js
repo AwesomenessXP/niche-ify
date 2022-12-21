@@ -27,8 +27,15 @@ const generateRandomString = length => {
 
 const stateKey = 'spotify_auth_state';
 
-// endpoint that redirects to spotify page for user authentication
+// REVIEW:
+/**
+ * GET: retrieves or reads resources
+ * POST: creates resources
+ * PUT: updates resources
+ * DELETE: deletes resources
+ */
 
+// endpoint that redirects to spotify page for user authentication
 app.get('/login', (req, res) => {
 
   const state = generateRandomString(16);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { accessToken } from './spotify';
+import { accessToken, logout } from './spotify';
 
 function App() {
   //initialize states
@@ -11,15 +11,21 @@ function App() {
     setToken(accessToken);
   }, []);
 
+  console.log(`token: ${token}`)
+
   /* if no token, show login, if token, show logout */
   return (
     <div>
       {!token ? 
-        <a href="http://localhost:8000/login">
-          Log in to Spotify
-        </a>
-        : 
-        <h1>Logged in!</h1>
+          <a href="http://localhost:8000/login">
+            Log in to Spotify
+          </a>
+        : (
+          <>
+            <h1>Logged in!</h1>
+            <button onClick ={logout}>Log Out</button>
+          </>
+        )
       }
     </div>
   )
