@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { accessToken, logout } from './spotify';
-import {GetUserPlaylists} from './searchPlaylist'
+import { Routes, Route } from 'react-router-dom';
+
+import { accessToken} from './spotify';
+import { Login } from './login';
+import { PlaylistPage } from './playlistPage';
 
 function App() {
   //initialize states
@@ -15,19 +18,12 @@ function App() {
 
   /* if no token, show login, if token, show logout */
   return (
-    <div>
-      {!token ? 
-          <a href="http://localhost:8000/login">
-            Log in to Spotify
-          </a>
-        : (
-          <>
-            <GetUserPlaylists token={token} />
-            <button onClick ={logout}>Log Out</button>
-          </>
-        )
-      }
-    </div>
+    <Routes>
+      {!token ?
+        <Route path='/' element={<Login />} /> :
+        <Route path='*' element={<PlaylistPage token={token} />}/>
+      }  
+    </Routes>  
   )
 }
 

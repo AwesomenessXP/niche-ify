@@ -11,15 +11,17 @@ export const UserPlaylist = ({
       method: 'get',
       baseURL: `https://api.spotify.com/v1/playlists/${playlistID}/tracks`,
       headers: `Authorization: Bearer ${token}`,
-      params: {limit: 50}
+      params: {limit: 20}
     })
       .then(res => {
-      // logic for paginating API response if more than 50 tracks
-      setPlaylistTracks(res.data.items);
-      setPlaylistName(playlistName);
+        // logic for paginating API response if more than 50 tracks
+        setPlaylistTracks(res.data.items);
+        setPlaylistName(playlistName);
       })
-    .catch(err => console.error(err));
+      .catch(err => console.error(err));
   }
+
+  // window.location.href = '/playlist'
 
   return (
     <div>
@@ -32,7 +34,7 @@ export const UserPlaylist = ({
               getPlaylistTracks(
                 playlist.id,
                 playlist.name)}>
-              Pick
+                Pick
             </button>
             <hr/>
           </div>
