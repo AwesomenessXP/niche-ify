@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { accessToken, logout } from './spotify';
+import {GetUserPlaylists} from './searchPlaylist'
 
 function App() {
   //initialize states
@@ -21,7 +22,7 @@ function App() {
           </a>
         : (
           <>
-            <h1>Logged in!</h1>
+            <GetUserPlaylists token={token} />
             <button onClick ={logout}>Log Out</button>
           </>
         )
