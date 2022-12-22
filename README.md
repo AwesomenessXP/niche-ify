@@ -57,6 +57,8 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
     - authenticating with token is inside custom headers, NOT auth param in axios!!
     - also remember that axios uses "data" for body, "params" for query requests 
 - also implemented routing for each page
+- one challenge was "onClick" would *initially* invoke the function inside it
+    - to fix this: onClick = func(() => someFunc)
 - the most challenging part was conditionally routing different components -> used "Navigate to" in else statement when specifing an element in Route component
 
 
