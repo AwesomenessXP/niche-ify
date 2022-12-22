@@ -1,7 +1,7 @@
 # niche-ify
 Niche-ify your spotify playlists by replacing all your mainstream artists with niche, underground artists in the same genre.
 
-## Authenticating Spotify app
+## Notes during development
 
 ##### 12/20/22
 - The most challenging part of this project right now is setting up authentication
@@ -47,8 +47,16 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
     - 2) store a timestamp (using Date().now) in localStoarge bc tokens expire after an hour
     - 3) before using an access token to make a request to API:
         - check if there is timestamp and access token in localStorage
-        - check if token is valid (use difference between now and timestamp)
+        - check if token is valid (use difference between Date.now() and timestamp)
         - if access token is valid, use that
         - if access token is expired, use refresh token -> fetch new token from "return_token" in the server -> send token in response -> store token in localStorage
+
+##### 12/21/22
+- I added logic for requesting data from Spotify's endpoints
+- I still struggled using axios, but got the hang of it after the first response
+    - authenticating with token is inside custom headers, NOT auth param in axios!!
+    - also remember that axios uses "data" for body, "params" for query requests 
+- also implemented routing for each page
+- the most challenging part was conditionally routing different components -> used "Navigate to" in else statement when specifing an element in Route component
 
 
