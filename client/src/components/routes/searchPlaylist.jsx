@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react"
 import axios from 'axios';
-import { UserPlaylist } from "./userPlaylists";
-import { ShowOnePlaylist } from './showOnePlaylist';
-
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// 
+import { UserPlaylist } from "../playlist/userPlaylists";
+import { ShowOnePlaylist } from '../playlist/showOnePlaylist';
+
+/**
+ * 
+ * @param {string} token access spotify endpoints
+ * @returns either user playlists, or specific playlist (when chosen)
+ */
 export const GetUserPlaylists = ({ token }) => {
+  // initialize all states
   const [listOfPlaylists, setListOfPlaylists] = useState([{}]);
   const [playlistTracks, setPlaylistTracks] = useState(null);
   const [playlistName, setPlaylistName] = useState('');
 
+  // happens any time the token is updated/modified
+  // fetches all of the user's playlists and stores them
   useEffect(() => {
     axios({
       method: 'get',

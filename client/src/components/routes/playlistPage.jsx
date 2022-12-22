@@ -1,9 +1,13 @@
 import { GetUserPlaylists } from './searchPlaylist';
-import { logout } from './spotify';
+import { logout } from '../auth/spotify';
 
 import { Routes, Route } from 'react-router-dom';
 
-// after user auth, go to this page
+/**
+ * 
+ * @param {string} token is used for accessing spotify endpoints
+ * @returns component that displays after auth
+ */
 export const PlaylistPage = ({ token }) => {
   return (
     <div>

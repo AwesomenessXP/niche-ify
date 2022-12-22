@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import { accessToken} from './spotify';
-import { Login } from './login';
-import { PlaylistPage } from './playlistPage';
+import { accessToken} from './components/auth/spotify';
+import { Login } from './components/auth/login';
+import { PlaylistPage } from './components/routes/playlistPage';
 
 function App() {
   //initialize states
