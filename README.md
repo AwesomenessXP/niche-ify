@@ -54,11 +54,13 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
 ##### 12/21/22
 - I added logic for requesting data from Spotify's endpoints
 - I still struggled using axios, but got the hang of it after the first response
-    - authenticating with token is inside custom headers, NOT auth param in axios!!
+    - authenticating with token is inside custom headers param, NOT auth param in axios!!
     - also remember that axios uses "data" for body, "params" for query requests 
 - also implemented routing for each page
 - one challenge was "onClick" would *initially* invoke the function inside it
-    - to fix this: onClick = func(() => someFunc)
+    - to fix this: onClick = (() => someFunc)
+    - onClick = (() => someFunc) -> someFunc is a CALLBACK function (calls after onClick is finished)
+    - ERROR: onClick = (someFunc) RETURNS the value of a function
 - the most challenging part was conditionally routing different components -> used "Navigate to" in else statement when specifing an element in Route component
 
 

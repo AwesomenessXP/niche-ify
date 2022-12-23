@@ -1,7 +1,7 @@
 import { GetUserPlaylists } from './searchPlaylist';
 import { logout } from '../auth/spotify';
 
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 
 /**
  * 
@@ -12,10 +12,9 @@ export const PlaylistPage = ({ token }) => {
   return (
     <div>
       <Routes>
-        <Route path='*'
-          element={<GetUserPlaylists token={token} />}/>
+        <Route path='*' element={<GetUserPlaylists token={token} />}/>
       </Routes>
-      
+      <Outlet/>
       <button onClick ={logout}>Log Out</button>
     </div>
   )

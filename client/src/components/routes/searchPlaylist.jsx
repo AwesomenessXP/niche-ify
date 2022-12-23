@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import axios from 'axios';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate} from 'react-router-dom';
 
 import { UserPlaylist } from "../playlist/userPlaylists";
 import { ShowOnePlaylist } from '../playlist/showOnePlaylist';
@@ -9,6 +9,7 @@ import { ShowOnePlaylist } from '../playlist/showOnePlaylist';
  * 
  * @param {string} token access spotify endpoints
  * @returns either user playlists, or specific playlist (when chosen)
+ * 
  */
 export const GetUserPlaylists = ({ token }) => {
   // initialize all states
@@ -33,7 +34,7 @@ export const GetUserPlaylists = ({ token }) => {
 
   return ( 
     <Routes>
-      <Route path={`/nicheify_${playlistName}`} element={<ShowOnePlaylist
+      <Route exact path={`nicheify_${playlistName}`} element={<ShowOnePlaylist
           playlistName={playlistName}
           playlistTracks={playlistTracks}
         />
@@ -45,8 +46,7 @@ export const GetUserPlaylists = ({ token }) => {
           setPlaylistTracks={setPlaylistTracks}
           token={token}
         /> :
-          <Navigate to={`/nicheify_${playlistName}`}
-        />
+        <Navigate replace to={`nicheify_${playlistName}`} />
         }
       />
     </Routes>

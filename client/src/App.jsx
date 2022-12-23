@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 import { accessToken} from './components/auth/spotify';
 import { Login } from './components/auth/login';
@@ -19,10 +19,12 @@ function App() {
   /* if no token, show login, if token, show logout */
   return (
     <Routes>
-      {!token ?
-        <Route path='/' element={<Login />} /> :
-        <Route path='*' element={<PlaylistPage token={token} />}/>
-      }  
+      <Route path="/playlist/*" element={ 
+        <PlaylistPage token={token} />
+      } />
+        <Route path='/' element={!token ? <Login /> :
+        <Navigate replace to='/playlist'/> 
+      } />     
     </Routes>  
   )
 }
