@@ -11,6 +11,10 @@ const bodyParser = require('body-parser')
 app.use(cors());
 app.use(bodyParser.json());
 
+const mongoDB = require('../db/mongoDB');
+
+mongoDB();
+
 app.get("/api", (req, res) => {
   res.json({ client_id: `${process.env.CLIENT_ID}`});
 });
