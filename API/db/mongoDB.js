@@ -21,11 +21,13 @@ exports.connectToDB = async () => {
 }
 
 // write to mongodb
-exports.writeToDB = async (collection, playlistData) => {
+exports.writeToDB = async (collection, playlistData, userEmail) => {
   try {
     // write to DB
     console.log('Writing to DB...')
-    const playlists = await collection.insertOne({ playlists: playlistData });
+    const playlists = await collection.insertOne({
+      playlists: playlistData, user_email: userEmail
+    });
     return playlists
   }
   catch (e) {

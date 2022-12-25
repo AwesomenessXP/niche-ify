@@ -27,13 +27,17 @@ app.get('/get_playlists', async (req, res) => {
   if (token !== '') {
     // init: make api req to spotify 
     spotifyApi.setAccessToken(token);
-    const playlistData = await spotifyApi.getUserPlaylists();
+    const playlistData = (await spotifyApi.getUserPlaylists()).body;
+    const userEmail = (await spotifyApi.getMe()).body.email;
 
     // write to DB once
     const {resultLength, collection} = await connectToDB();
 
     if (resultLength === 0) {
-      const playlists = await writeToDB(collection, playlistData.body);
+      const playlists = await writeToDB(
+        collection,
+        playlistData,
+        userEmail);
       console.log(playlists);
     }
     else {
