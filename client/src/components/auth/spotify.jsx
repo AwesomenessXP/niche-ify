@@ -45,7 +45,6 @@ const getAccessToken = () => {
     // If there is a valid access token in localStorage, use that
   if (LOCAL_STORAGE_VALUES.access_tk &&
     LOCAL_STORAGE_VALUES.access_tk !== 'undefined') {
-    console.log('lol hey')
     return LOCAL_STORAGE_VALUES.access_tk;
   }
 
