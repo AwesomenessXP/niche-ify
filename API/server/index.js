@@ -6,17 +6,46 @@ const axios = require('axios');
 const PORT = process.env.PORT || 8000;
 const app = express();
 const cors = require('cors');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const Spotify = require('spotify-web-api-node');
 
+const spotifyApi = new Spotify();
+
+//init variables
+const DB_NAME = 'spotify_user_data';
+
+// use cors, extract data from body
 app.use(cors());
 app.use(bodyParser.json());
 
-const mongoDB = require('../db/mongoDB');
+// connect to mongodb
+const {connectToDB, writeToDB} = require('../db/mongoDB');
 
-mongoDB();
+// send user's data and playlists
+app.get('/get_playlists', async (req, res) => {
+  const { token } = req.query;
+  if (token !== '') {
+    // init: make api req to spotify 
+    spotifyApi.setAccessToken(token);
+    const playlistData = await spotifyApi.getUserPlaylists();
 
-app.get("/api", (req, res) => {
-  res.json({ client_id: `${process.env.CLIENT_ID}`});
+    // write to DB once
+    const {resultLength, collection} = await connectToDB();
+
+    if (resultLength === 0) {
+      const playlists = await writeToDB(collection, playlistData.body);
+      console.log(playlists);
+    }
+    else {
+      console.log('Playlist already inserted!');
+    }
+
+    // on other cases, read from DB
+    // get user's name and playlists (paginate if needed)
+    // params: username, playlists and their metadata
+
+    // res.send(playlists);
+  }
 });
 
 // generate random code for the state
