@@ -28,13 +28,13 @@ exports.writeToDB = async (collection, playlistData, userEmail) => {
     const playlists = await collection.insertOne({
       playlists: playlistData, user_email: userEmail
     });
+
+    await client.close();
     return playlists
   }
   catch (e) {
     console.log('Did not connect to DB :(');
-    return false;
-  }
-  finally {
     await client.close();
+    return false;
   }
 }
