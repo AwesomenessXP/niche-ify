@@ -7,7 +7,7 @@ import { PlaylistPage } from './components/routes/playlistPage';
 
 function App() {
   //initialize states
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(null);
 
   // everytime user access localhost:3000 (sign in), set the token
   useEffect(() => {

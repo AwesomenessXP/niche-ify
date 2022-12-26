@@ -9,6 +9,12 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const Spotify = require('spotify-web-api-node');
 
+// import mongodb
+const { MongoClient } = require("mongodb");
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
+
+
 const spotifyApi = new Spotify();
 
 //init variables
@@ -19,43 +25,53 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // connect to mongodb
-const {connectToDB, writeToDB} = require('../db/mongoDB');
+const {connectToDB, writeToDB, readFromDB} = require('../db/mongoDB');
 
 // send user's data and playlists
-app.get('/get_playlists', async (req, res) => {
+app.get('/playlists', async (req, res) => {
+  // init: make api req to spotify 
   const { token } = req.query;
-  if (token !== '') {
-    // init: make api req to spotify 
-    spotifyApi.setAccessToken(token);
-    const playlistData = (await spotifyApi.getUserPlaylists()).body;
-    const userEmail = (await spotifyApi.getMe()).body.email;
+  spotifyApi.setAccessToken(token);
+  const playlistData = (await spotifyApi.getUserPlaylists({limit: 50})).body;
+  const userEmail = (await spotifyApi.getMe()).body.email;
 
-    // write to DB once
-    const {resultLength, collection} = await connectToDB();
+  // write to DB once
+  await client.connect();
+  const { resultLength, collection } = await connectToDB(client);
 
-    if (resultLength === 0) {
-      const playlists = await writeToDB(
-        collection,
-        playlistData,
-        userEmail);
-      console.log(playlists);
-    }
-    else {
-      console.log('Playlist already inserted!');
-    }
+  if (resultLength === 0) {
+    const playlists = await writeToDB(
+      client, 
+      collection,
+      playlistData,
+      userEmail);
+    console.log(playlists);
+  }
+  else if (!resultLength && !collection) {
+    console.log('Unable to write to DB :(');
+  }
+  else {
+    console.log('Playlists already inserted!');
+  }
 
-    // on other cases, read from DB
-    // get user's name and playlists (paginate if needed)
-    // params: username, playlists and their metadata
-
-    // res.send(playlists);
+  // after validating data, read from DB
+  // get user's name and playlists (paginate if needed)
+  // params: username, playlists and their metadata
+  const allPlaylists = await readFromDB(client, collection);
+  if (allPlaylists) {
+    console.log('Successfuly read!');
+    res.send(await allPlaylists);
+  }
+  else {
+    res.send('false');
   }
 });
 
 // generate random code for the state
 const generateRandomString = length => {
   let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const possible =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }

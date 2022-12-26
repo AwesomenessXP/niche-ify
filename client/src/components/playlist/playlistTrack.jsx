@@ -4,7 +4,7 @@
  * @param {Array} getPlaylistTracks 
  * @returns single cell containing playlist info and name
  */
-export const PlaylistTrack = ({ playlist, getPlaylistTracks, playlistName }) => {
+export const PlaylistTrack = ({ playlist, getPlaylistTracks}) => {
   return (
     <div>
       <label key={playlist.id}>{playlist.name}</label>

@@ -25,20 +25,20 @@ export const UserPlaylist = ({
       // Paginate all API requests
       // Divide the total number of track by the limit 
       //        to get the number of API calls
-      for (let i = 1; i < Math.ceil(playlist.tracks.total / playlist.tracks.limit); i++) {
-        const trackToAdd = (await spotifyApi.getPlaylistTracks(
+      for (let i = 0; i < Math.ceil(playlist.tracks.total / playlist.tracks.limit); i++) {
+        const trackToAdd = await spotifyApi.getPlaylistTracks(
           playlistID, {
           offset: playlist.tracks.limit * i // Offset each call by the limit * the call's index
-        }));
+        });
 
         // Push the retreived tracks into the array
-        trackToAdd.items.forEach((item) => allTracks.push(item));
+        await trackToAdd.items.forEach((item) => allTracks.push(item));
       }// for
     }
     else {
       // take the current tracks and add them to the array
       const trackToAdd = (await spotifyApi.getPlaylistTracks(playlistID));
-      trackToAdd.items.forEach((item) => allTracks.push(item));
+      await trackToAdd.items.forEach((item) => allTracks.push(item));
     }// else
 
     setPlaylistTracks(allTracks);
@@ -51,7 +51,7 @@ export const UserPlaylist = ({
       {/* display all of the user's playlists */}
       {listOfPlaylists.map(playlist => {
         return ( 
-          <div>
+          <div key={playlist.id}>
             <PlaylistTrack
               playlist={playlist}
               getPlaylistTracks={getPlaylistTracks}
