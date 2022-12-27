@@ -46,32 +46,31 @@ app.get('/playlists', async (req, res) => {
   let allPlaylists = [];
 
   if (resultLength === 0) { // when the DB is empty..
-    // first, check the total to see HOW many playlists the user has
+    //first, check the total to see HOW many playlists the user has
     if (total > limit) {
       // paginate api requests
       for (let i = 0; i < Math.ceil(total / limit); i++){
-        console.log('hey!');
-        
         // make a request to get playlist offset
-        const playlistToAdd = await spotifyApi.getUserPlaylists({
-          limit: limit, 
+        const playlistToAdd = (await spotifyApi.getUserPlaylists({
+          limit: limit,
           offset: limit * i
-        });
-
+        })).body;
         // add chunk of playlists to array
-        playlistToAdd.body.items.map(item => allPlaylists.push(item));
+        playlistToAdd.items.map(item => allPlaylists.push(item));
       }
     }
     else {
       // when there is no offset, add playlist data
-      allPlaylists = playlistData.body.items;
+      allPlaylists = playlistData.items;
     }
 
+    // write to DB
     const written = await writeToDB(
       client,
       collection,
       allPlaylists,
       userEmail);
+    
     if (written) {
       console.log('Successfully written!');
       isValidConnection = true;
@@ -97,6 +96,8 @@ app.get('/playlists', async (req, res) => {
   else {
     res.send('Unable to fetch playlists');
   }// else
+
+  await client.close();
 });
 
 // generate random code for the state
