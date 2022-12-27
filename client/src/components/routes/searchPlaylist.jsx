@@ -31,12 +31,11 @@ export const GetUserPlaylists = ({ token }) => {
         try {
           // get all playlists followed/owned by user
           const allPlaylists = await axios.get(`/playlists?token=${token}`);
-
           // get user's display name
           const me = await spotifyApi.getMe();
 
           // filter to playlists ONLY OWNED by the user
-          const sendPlaylists = await allPlaylists.data[0].playlists.items
+          const sendPlaylists = await allPlaylists.data[0].playlists
             .filter(playlist => {
             return playlist.owner.display_name === `${me.id}`;
           });

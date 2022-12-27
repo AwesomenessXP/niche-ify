@@ -35,17 +35,41 @@ app.get('/playlists', async (req, res) => {
   const playlistData = (await spotifyApi.getUserPlaylists({limit: 50})).body;
   const userEmail = (await spotifyApi.getMe()).body.email;
 
+  console.log(playlistData)
+
   // write to DB once
   await client.connect();
   const { resultLength, collection } = await connectToDB(client);
+  const { limit, total } = playlistData;
+
+  let allPlaylists = [];
 
   if (resultLength === 0) {
-    const playlists = await writeToDB(
+    // first, check the total to see HOW many playlists the user has
+    if (total > limit) {
+      // paginate api requests
+      for (let i = 0; i < Math.ceil(total / limit); i++){
+        console.log('hey!');
+        
+        // make a request to get playlist offset
+        const playlistToAdd = await spotifyApi.getUserPlaylists({
+          limit: limit, 
+          offset: limit * i
+        });
+
+        // add chunk of playlists to array
+        playlistToAdd.body.items.map(item => allPlaylists.push(item));
+      }
+    }
+    else {
+      allPlaylists = playlistData;
+    }
+
+    await writeToDB(
       client, 
       collection,
-      playlistData,
+      allPlaylists,
       userEmail);
-    console.log(playlists);
   }
   else if (!resultLength && !collection) {
     console.log('Unable to write to DB :(');
@@ -57,10 +81,10 @@ app.get('/playlists', async (req, res) => {
   // after validating data, read from DB
   // get user's name and playlists (paginate if needed)
   // params: username, playlists and their metadata
-  const allPlaylists = await readFromDB(client, collection);
-  if (allPlaylists) {
+  const sendAllPlaylists = await readFromDB(client, collection);
+  if (sendAllPlaylists) {
     console.log('Successfuly read!');
-    res.send(await allPlaylists);
+    res.send(await sendAllPlaylists);
   }
   else {
     res.send('false');
