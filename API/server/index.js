@@ -34,6 +34,7 @@ app.get('/playlists', async (req, res) => {
   spotifyApi.setAccessToken(token);
   const playlistData = (await spotifyApi.getUserPlaylists({limit: 50})).body;
   const userEmail = (await spotifyApi.getMe()).body.email;
+  let isValidConnection = false;
 
   console.log(playlistData)
 
@@ -44,7 +45,7 @@ app.get('/playlists', async (req, res) => {
 
   let allPlaylists = [];
 
-  if (resultLength === 0) {
+  if (resultLength === 0) { // when the DB is empty..
     // first, check the total to see HOW many playlists the user has
     if (total > limit) {
       // paginate api requests
@@ -62,33 +63,40 @@ app.get('/playlists', async (req, res) => {
       }
     }
     else {
-      allPlaylists = playlistData;
+      // when there is no offset, add playlist data
+      allPlaylists = playlistData.body.items;
     }
 
-    await writeToDB(
-      client, 
+    const written = await writeToDB(
+      client,
       collection,
       allPlaylists,
       userEmail);
-  }
+    if (written) {
+      console.log('Successfully written!');
+      isValidConnection = true;
+    }
+    else {
+      console.log("Unable to write to DB :(");
+    }
+  }// if
   else if (!resultLength && !collection) {
     console.log('Unable to write to DB :(');
-  }
+  }// else if
   else {
     console.log('Playlists already inserted!');
-  }
+    isValidConnection = true;
+  }// else
 
   // after validating data, read from DB
-  // get user's name and playlists (paginate if needed)
-  // params: username, playlists and their metadata
-  const sendAllPlaylists = await readFromDB(client, collection);
-  if (sendAllPlaylists) {
+  const readAllPlaylists = await readFromDB(client, collection);
+  if (readAllPlaylists && isValidConnection) {
     console.log('Successfuly read!');
-    res.send(await sendAllPlaylists);
-  }
+    res.send(await readAllPlaylists);
+  }// if
   else {
-    res.send('false');
-  }
+    res.send('Unable to fetch playlists');
+  }// else
 });
 
 // generate random code for the state
