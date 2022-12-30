@@ -8,8 +8,8 @@ export const PlaylistTrack = ({ playlist, getPlaylistTracks}) => {
   return (
     <div>
       <label key={playlist.id}>{playlist.name}</label>
-      <button onClick={() =>
-        getPlaylistTracks(playlist.id, playlist.name)}
+      <button onClick={async() =>
+        await getPlaylistTracks(playlist.id, playlist.name)}
       >
         Pick
       </button>

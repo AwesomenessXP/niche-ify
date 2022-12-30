@@ -17,9 +17,6 @@ const client = new MongoClient(uri);
 // import spotify api
 const spotifyApi = new Spotify();
 
-//init variables
-const DB_NAME = 'spotify_user_data';
-
 // use cors, extract data from body
 app.use(cors());
 app.use(bodyParser.json());
@@ -107,8 +104,7 @@ app.get('/playlist_tracks', async (req, res) => {
   // get all playlist tracks
   const playlistTrackData = (await spotifyApi.getPlaylistTracks(id)).body;
   const userEmail = (await spotifyApi.getMe()).body.email;
-
-  console.log(playlistTrackData);
+  // console.log(playlistTrackData);
 
   // write once to DB
   let isValidConnection = false;
@@ -126,7 +122,7 @@ app.get('/playlist_tracks', async (req, res) => {
   if (resultLength == 0) {
         //first, check the total to see HOW many playlists the user has
         if (total > limit) {
-          // paginate api requests
+          // if there is more tracks than the limit (100 by default)
           for (let i = 0; i < Math.ceil(total / limit); i++){
             // make a request to get playlist offset
             const tracksToAdd = (await spotifyApi.getPlaylistTracks(id, {
@@ -162,6 +158,15 @@ app.get('/playlist_tracks', async (req, res) => {
     console.log('Playlists already inserted!');
     isValidConnection = true;
   }// else
+
+  // after validating data, read from DB
+  const readPlaylistTracks = await readFromDB(client, collection, name);
+
+  readPlaylistTracks && isValidConnection ?
+    res.send(await readPlaylistTracks) :
+    res.send('Unable to fetch playlists');
+
+  await client.close();
 
 });
 

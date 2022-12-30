@@ -20,7 +20,7 @@ export const UserPlaylist = ({
     // spotifyApi.setAccessToken(token);
     // let allTracks = [];
     // const playlist = (await spotifyApi.getPlaylist(playlistID));
-    // // if there is more tracks than the limit (100 by default)
+    // 
     // if (playlist.tracks.total > playlist.tracks.limit) {
 
     //   // Paginate all API requests
@@ -32,7 +32,7 @@ export const UserPlaylist = ({
     //       offset: playlist.tracks.limit * i // Offset each call by the limit * the call's index
     //     });
 
-    //     // Push the retreived tracks into the array
+    //     
     //     await trackToAdd.items.forEach((item) => allTracks.push(item));
     //   }// for
     // }
@@ -48,7 +48,15 @@ export const UserPlaylist = ({
     if (token != null) {
       try {
         // get all playlist tracks using playlist id (returns tracks)
-        await axios.get(`/playlist_tracks?token=${token}&id=${playlistID}&name=${playlistName}`)
+        const playlistTrackData =
+          await axios.get(
+            `/playlist_tracks?token=${token}&id=${playlistID}&name=${playlistName}`
+          );
+        
+        const playlistTracks = await playlistTrackData.data[0].playlist_tracks
+        
+        setPlaylistTracks(await playlistTracks);
+        setPlaylistName(playlistName);
 
         // set playlist tracks and name
       } catch (e) {

@@ -66,10 +66,16 @@ exports.writeToDB = async (client, collection, playlistData, userEmail,
 }
 
 // read from mongodb
-exports.readFromDB = async (client, collection) => {
+exports.readFromDB = async (client, collection, playlistName) => {
   try {
     console.log('Reading from DB...');
-    const query = await collection.find({}).toArray();
+    let query;
+    if (playlistName != undefined) {
+      query = await collection.find({ playlist_name: playlistName }).toArray();
+    }
+    else {
+      query = await collection.find({}).toArray();
+    }
     console.log('Successfully read!');
     return query;
   }
