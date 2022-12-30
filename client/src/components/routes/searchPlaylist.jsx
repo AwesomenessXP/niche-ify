@@ -17,8 +17,6 @@ export const GetUserPlaylists = ({ token }) => {
   const [listOfPlaylists, setListOfPlaylists] = useState([{}]);
   const [playlistTracks, setPlaylistTracks] = useState(null);
   const [playlistName, setPlaylistName] = useState('');
-
-  
   spotifyApi.setAccessToken(token);
   // happens any time the token is updated/modified
   // fetches all of the user's playlists and stores them
@@ -33,7 +31,6 @@ export const GetUserPlaylists = ({ token }) => {
           const allPlaylists = await axios.get(`/playlists?token=${token}`);
           // get user's display name
           const me = await spotifyApi.getMe();
-
           // filter to playlists ONLY OWNED by the user
           const sendPlaylists = await allPlaylists.data[0].playlists
             .filter(playlist => {

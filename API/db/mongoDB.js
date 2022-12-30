@@ -1,17 +1,25 @@
-const { find } = require('async');
-
 require('dotenv').config();
 
 //init variables
 const DB_NAME = 'spotify_user_data';
 
 // connect to mongodb
-exports.connectToDB = async (client) => {
+exports.connectToDB = async (client, collectionName, playlistName) => {
   try {
     console.log('Connected to server!');
-    const database = client.db(DB_NAME); 
-    const collection = database.collection('all_playlists');
-    const findResult = await collection.find({}).toArray();
+    const database = client.db(DB_NAME);
+    const collection = database.collection(collectionName);
+
+    let findResult;
+    if (playlistName != undefined) {
+      findResult = await collection.find({
+        playlist_name: playlistName
+      }).toArray();
+    }
+    else {
+      findResult = await collection.find({}).toArray();
+    }
+
     return {
       resultLength: findResult.length,
       collection: collection
@@ -28,16 +36,28 @@ exports.connectToDB = async (client) => {
 }
 
 // write to mongodb
-exports.writeToDB = async (client, collection, playlistData, userEmail) => {
+exports.writeToDB = async (client, collection, playlistData, userEmail,
+  playlistName) => {
   try {
     // write to DB
-    console.log('Writing to DB...')
-    const playlists = await collection.insertOne({
-      playlists: playlistData,
-      user_email: userEmail
-    });
+    let items;
+    console.log('Writing to DB...');
+    if (playlistName == undefined) {
+      items = await collection.insertOne({
+        playlists: playlistData,
+        user_email: userEmail,
+      });
+    }// if
+    else {
+      items = await collection.insertOne({
+        playlist_tracks: playlistData,
+        user_email: userEmail,
+        playlist_name: playlistName
+      });
+    }
 
-    return playlists;
+    console.log('Successfully written!');
+    return items;
   }
   catch (e) {
     await client.close();
@@ -49,7 +69,9 @@ exports.writeToDB = async (client, collection, playlistData, userEmail) => {
 exports.readFromDB = async (client, collection) => {
   try {
     console.log('Reading from DB...');
-    return await collection.find({}).toArray();
+    const query = await collection.find({}).toArray();
+    console.log('Successfully read!');
+    return query;
   }
   catch (e) {
     await client.close();

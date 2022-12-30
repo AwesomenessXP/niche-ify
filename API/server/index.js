@@ -14,7 +14,7 @@ const { MongoClient } = require("mongodb");
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-
+// import spotify api
 const spotifyApi = new Spotify();
 
 //init variables
@@ -25,7 +25,11 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // connect to mongodb
-const {connectToDB, writeToDB, readFromDB} = require('../db/mongoDB');
+const {
+  connectToDB,
+  writeToDB,
+  readFromDB,
+} = require('../db/mongoDB');
 
 // send user's data and playlists
 app.get('/playlists', async (req, res) => {
@@ -36,11 +40,11 @@ app.get('/playlists', async (req, res) => {
   const userEmail = (await spotifyApi.getMe()).body.email;
   let isValidConnection = false;
 
-  console.log(playlistData)
+  // console.log(playlistData)
 
   // write to DB once
   await client.connect();
-  const { resultLength, collection } = await connectToDB(client);
+  const { resultLength, collection } = await connectToDB(client, 'all_playlists');
   const { limit, total } = playlistData;
 
   let allPlaylists = [];
@@ -71,13 +75,9 @@ app.get('/playlists', async (req, res) => {
       allPlaylists,
       userEmail);
     
-    if (written) {
-      console.log('Successfully written!');
-      isValidConnection = true;
-    }
-    else {
+    written ?
+      isValidConnection = true :
       console.log("Unable to write to DB :(");
-    }
   }// if
   else if (!resultLength && !collection) {
     console.log('Unable to write to DB :(');
@@ -89,15 +89,80 @@ app.get('/playlists', async (req, res) => {
 
   // after validating data, read from DB
   const readAllPlaylists = await readFromDB(client, collection);
-  if (readAllPlaylists && isValidConnection) {
-    console.log('Successfuly read!');
-    res.send(await readAllPlaylists);
-  }// if
-  else {
+  
+  readAllPlaylists && isValidConnection ?
+    res.send(await readAllPlaylists) :
     res.send('Unable to fetch playlists');
-  }// else
 
   await client.close();
+});
+
+// send user playlist tracks to client
+app.get('/playlist_tracks', async (req, res) => {
+  // in query params, get playlist id 
+  // use spotify api to find that playlist
+  const { token, id, name } = req.query;
+  spotifyApi.setAccessToken(token);
+
+  // get all playlist tracks
+  const playlistTrackData = (await spotifyApi.getPlaylistTracks(id)).body;
+  const userEmail = (await spotifyApi.getMe()).body.email;
+
+  console.log(playlistTrackData);
+
+  // write once to DB
+  let isValidConnection = false;
+  await client.connect();
+  const { resultLength, collection } = await connectToDB(
+    client,
+    'playlist_tracks',
+    name
+  );
+  const { limit, total } = playlistTrackData;
+
+  let allPlaylistTracks = [];
+
+  // check that the DB is initially empty OR playlist name not found 
+  if (resultLength == 0) {
+        //first, check the total to see HOW many playlists the user has
+        if (total > limit) {
+          // paginate api requests
+          for (let i = 0; i < Math.ceil(total / limit); i++){
+            // make a request to get playlist offset
+            const tracksToAdd = (await spotifyApi.getPlaylistTracks(id, {
+              limit: limit,
+              offset: limit * i
+            })).body;
+            // add chunk of playlists to array
+            tracksToAdd.items.map(item => allPlaylistTracks.push(item));
+          }
+        }
+        else {
+          // when there is no offset, add playlist data
+          allPlaylistTracks = playlistTrackData.items;
+        }
+    
+        // write to DB
+        const written = await writeToDB(
+          client,
+          collection,
+          allPlaylistTracks,
+          userEmail,
+          name
+        );
+        
+        written ?
+          isValidConnection = true :
+          console.log("Unable to write to DB :(");
+  }
+  else if (!resultLength && !collection) {
+    console.log('Unable to write to DB :(');
+  }// else if
+  else {
+    console.log('Playlists already inserted!');
+    isValidConnection = true;
+  }// else
+
 });
 
 // generate random code for the state
