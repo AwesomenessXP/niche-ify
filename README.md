@@ -63,4 +63,12 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
     - ERROR: onClick = (someFunc) RETURNS the value of a function
 - the most challenging part was conditionally routing different components -> used "Navigate to" in else statement when specifing an element in Route component
 
+##### 12/30/22
+- I finally fixed the bug that I've been dealing with all week!!
+- Problem: refreshing the page also resets the component
+- Cause: states in React DO NOT persist after refreshing!!
+- instead of creating new states for the selected playlist and tracks, 
+I saved it in localStorage to persist between sessions
+- I also did not add an outlet in the parent component, thus the nested component couldnt be rendered
+
 

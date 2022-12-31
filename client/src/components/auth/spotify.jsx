@@ -83,6 +83,8 @@ export const logout = () => {
     local_storage.removeItem(LOCAL_STORAGE_KEYS[property]);
   }
 
+  local_storage.clear();
+
   // navigate to homepage
   window.location = window.location.origin;
 }

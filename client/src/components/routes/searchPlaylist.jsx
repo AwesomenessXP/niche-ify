@@ -1,5 +1,5 @@
 import { useEffect, useState} from "react"
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route} from 'react-router-dom';
 import { UserPlaylist } from "../playlist/playlistPage";
 import { ShowOnePlaylist } from '../playlist/playlist';
 import axios from 'axios';
@@ -15,8 +15,6 @@ const spotifyApi = new Spotify();
 export const GetUserPlaylists = ({ token }) => {
   // initialize all states
   const [listOfPlaylists, setListOfPlaylists] = useState([{}]);
-  const [playlistTracks, setPlaylistTracks] = useState(null);
-  const [playlistName, setPlaylistName] = useState('');
   spotifyApi.setAccessToken(token);
   // happens any time the token is updated/modified
   // fetches all of the user's playlists and stores them
@@ -50,21 +48,13 @@ export const GetUserPlaylists = ({ token }) => {
 
   return ( 
     <Routes>
-      <Route exact path={`nicheify_${playlistName}`} element={<ShowOnePlaylist
-          playlistName={playlistName}
-          playlistTracks={playlistTracks}
-        />
-        }
-      />
-      <Route path="*" element={!playlistTracks ? <UserPlaylist
+      <Route path="/*" element={<UserPlaylist
           listOfPlaylists={listOfPlaylists}
-          setPlaylistName={setPlaylistName}
-          setPlaylistTracks={setPlaylistTracks}
           token={token}
-        /> :
-        <Navigate replace to={`nicheify_${playlistName}`} />
-        }
-      />
+      />}>
+        <Route path={`nicheify_${localStorage.getItem('selected_name')}`}
+          element={<ShowOnePlaylist/>}/>
+      </Route>
     </Routes>
   )
 }
