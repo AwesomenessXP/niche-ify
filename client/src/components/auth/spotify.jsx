@@ -29,10 +29,6 @@ const getAccessToken = () => {
     expires_in: urlParams.get('expires_in'),
   }
 
-  console.log(queryParams.access_token);
-  console.log(queryParams.refresh_token);
-  console.log(queryParams.expires_in);
-
   // check if theres an error in query
   const hasError = urlParams.get('error'); 
 

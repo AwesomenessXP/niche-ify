@@ -6,7 +6,7 @@
  */
 export const ShowOnePlaylist = () => {
   const name = localStorage.getItem('selected_name');
-  const tracks = JSON.parse(localStorage.getItem(name));
+  const tracks = JSON.parse(localStorage.getItem('selected_playlist'));
   return (
     <div>
       <h1>{name}</h1>

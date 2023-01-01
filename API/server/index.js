@@ -7,6 +7,8 @@ const PORT = process.env.PORT || 8000;
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
+
+// import spotify
 const Spotify = require('spotify-web-api-node');
 
 // import mongodb
@@ -24,9 +26,10 @@ app.use(bodyParser.json());
 // connect to mongodb
 const {
   connectToDB,
-  writeToDB,
   readFromDB,
 } = require('../db/mongoDB');
+
+const { requestItems } = require('./requestSpotifyData');
 
 // send user's data and playlists
 app.get('/playlists', async (req, res) => {
@@ -35,59 +38,28 @@ app.get('/playlists', async (req, res) => {
   spotifyApi.setAccessToken(token);
   const playlistData = (await spotifyApi.getUserPlaylists({limit: 50})).body;
   const userEmail = (await spotifyApi.getMe()).body.email;
-  let isValidConnection = false;
-
-  // console.log(playlistData)
 
   // write to DB once
   await client.connect();
   const { resultLength, collection } = await connectToDB(client, 'all_playlists');
   const { limit, total } = playlistData;
 
-  let allPlaylists = [];
-
-  if (resultLength === 0) { // when the DB is empty..
-    //first, check the total to see HOW many playlists the user has
-    if (total > limit) {
-      // paginate api requests
-      for (let i = 0; i < Math.ceil(total / limit); i++){
-        // make a request to get playlist offset
-        const playlistToAdd = (await spotifyApi.getUserPlaylists({
-          limit: limit,
-          offset: limit * i
-        })).body;
-        // add chunk of playlists to array
-        playlistToAdd.items.map(item => allPlaylists.push(item));
-      }
-    }
-    else {
-      // when there is no offset, add playlist data
-      allPlaylists = playlistData.items;
-    }
-
-    // write to DB
-    const written = await writeToDB(
-      client,
-      collection,
-      allPlaylists,
-      userEmail);
-    
-    written ?
-      isValidConnection = true :
-      console.log("Unable to write to DB :(");
-  }// if
-  else if (!resultLength && !collection) {
-    console.log('Unable to write to DB :(');
-  }// else if
-  else {
-    console.log('Playlists already inserted!');
-    isValidConnection = true;
-  }// else
+  const { validConnection } = await requestItems(
+    token,
+    client,
+    collection,
+    playlistData,
+    resultLength,
+    total,
+    limit,
+    "playlists",
+    userEmail,
+  );
 
   // after validating data, read from DB
   const readAllPlaylists = await readFromDB(client, collection);
   
-  readAllPlaylists && isValidConnection ?
+  readAllPlaylists && validConnection ?
     res.send(await readAllPlaylists) :
     res.send('Unable to fetch playlists');
 
@@ -97,17 +69,14 @@ app.get('/playlists', async (req, res) => {
 // send user playlist tracks to client
 app.get('/playlist_tracks', async (req, res) => {
   // in query params, get playlist id 
-  // use spotify api to find that playlist
   const { token, id, name } = req.query;
   spotifyApi.setAccessToken(token);
 
   // get all playlist tracks
   const playlistTrackData = (await spotifyApi.getPlaylistTracks(id)).body;
   const userEmail = (await spotifyApi.getMe()).body.email;
-  // console.log(playlistTrackData);
 
   // write once to DB
-  let isValidConnection = false;
   await client.connect();
   const { resultLength, collection } = await connectToDB(
     client,
@@ -116,53 +85,24 @@ app.get('/playlist_tracks', async (req, res) => {
   );
   const { limit, total } = playlistTrackData;
 
-  let allPlaylistTracks = [];
-
-  // check that the DB is initially empty OR playlist name not found 
-  if (resultLength == 0) {
-        //first, check the total to see HOW many playlists the user has
-        if (total > limit) {
-          // if there is more tracks than the limit (100 by default)
-          for (let i = 0; i < Math.ceil(total / limit); i++){
-            // make a request to get playlist offset
-            const tracksToAdd = (await spotifyApi.getPlaylistTracks(id, {
-              limit: limit,
-              offset: limit * i
-            })).body;
-            // add chunk of playlists to array
-            tracksToAdd.items.map(item => allPlaylistTracks.push(item));
-          }
-        }
-        else {
-          // when there is no offset, add playlist data
-          allPlaylistTracks = playlistTrackData.items;
-        }
-    
-        // write to DB
-        const written = await writeToDB(
-          client,
-          collection,
-          allPlaylistTracks,
-          userEmail,
-          name
-        );
-        
-        written ?
-          isValidConnection = true :
-          console.log("Unable to write to DB :(");
-  }
-  else if (!resultLength && !collection) {
-    console.log('Unable to write to DB :(');
-  }// else if
-  else {
-    console.log('Playlists already inserted!');
-    isValidConnection = true;
-  }// else
+  const { validConnection } = await requestItems(
+    token,
+    client,
+    collection,
+    playlistTrackData,
+    resultLength,
+    total,
+    limit,
+    "tracks",
+    userEmail,
+    name,
+    id
+  );
 
   // after validating data, read from DB
   const readPlaylistTracks = await readFromDB(client, collection, name);
 
-  readPlaylistTracks && isValidConnection ?
+  readPlaylistTracks && validConnection ?
     res.send(await readPlaylistTracks) :
     res.send('Unable to fetch playlists');
 

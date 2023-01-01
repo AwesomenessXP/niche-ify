@@ -22,9 +22,9 @@ export const PlaylistTrack = ({ playlist, token}) => {
         const playlistTrack = await playlistTrackData.data[0].playlist_tracks
       
         // before setting playlist, check if the track is in localStorage
-        if (localStorage.getItem(playlistName) === null) {
-          localStorage.setItem(playlistName, JSON.stringify(await playlistTrack));
-        }
+        // if (localStorage.getItem(playlistName) === null) {
+          localStorage.setItem('selected_playlist', JSON.stringify(await playlistTrack));
+        // }
         // save the playlist the user selected
         localStorage.setItem(`selected_name`, playlistName);  
 

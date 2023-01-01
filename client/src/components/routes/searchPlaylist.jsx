@@ -18,9 +18,7 @@ export const GetUserPlaylists = ({ token }) => {
   spotifyApi.setAccessToken(token);
   // happens any time the token is updated/modified
   // fetches all of the user's playlists and stores them
-
   useEffect(() => { 
-
     async function getPlaylists() {
       // first check if the token exists, then ask server
       if (token !== null) {
