@@ -11,8 +11,7 @@ export const PlaylistPage = ({ token }) => {
   return (
     <div>
       <Routes>
-        <Route path='*' element={<GetUserPlaylists token={token}
-        />} />
+        <Route path='*' element={<GetUserPlaylists token={token}/>}/>
       </Routes>
       <button onClick ={logout}>Log Out</button>
     </div>

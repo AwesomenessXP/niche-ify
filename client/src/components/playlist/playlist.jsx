@@ -11,23 +11,27 @@ export const ShowOnePlaylist = () => {
   const name = localStorage.getItem('selected_name');
   const tracks = JSON.parse(localStorage.getItem('selected_playlist'));
 
-  let artistsID = tracks.map(track => track.track.artists[0].id);
-  let uniqueArtists = new Set(artistsID);
-  uniqueArtists = Array.from(uniqueArtists);
-  uniqueArtists = uniqueArtists.slice(0, 50);
-
   function getRelatedArtists() {
+    // get list of all artists
+    let artistsID = tracks.map(track => track.track.artists[0].id);
+    // remove dupes
+    let uniqueArtists = new Set(artistsID);
+    uniqueArtists = Array.from(uniqueArtists);
+    // get all related artists
+    let related = [];
     uniqueArtists.forEach(async (artist) => {
       const relatedArtists = await spotifyApi.getArtistRelatedArtists(artist);
-      console.log(relatedArtists);
-    })
+      // console.log(relatedArtists);
+      related.push(await relatedArtists);
+    });
+    console.log(related);
   }
 
+  /* display all tracks from the playlist */
   return (
     <div>
       <h1>{name}</h1>
       <button onClick={() => getRelatedArtists()}>NICHE-IFY</button>
-      {/* display all tracks from the playlist */}
       {tracks.map(track => {
         return (
           <div key={track.track.id}>

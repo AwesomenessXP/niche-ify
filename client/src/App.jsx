@@ -2,7 +2,7 @@ import { useEffect, useState} from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { accessToken} from './components/auth/spotify';
 import { Login } from './components/auth/login';
-import { PlaylistPage } from './components/routes/playlistPage';
+import { PlaylistPage } from './components/routes/playlistPageContainer';
 
 
 function App() {
