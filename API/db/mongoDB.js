@@ -55,7 +55,6 @@ exports.writeToDB = async (client, collection, playlistData, userEmail,
         playlist_name: playlistName
       });
     }
-
     console.log('Successfully written!');
     return items;
   }

@@ -53,16 +53,13 @@ exports.requestItems = async (
     }
   
     // write to DB
-    const written = 
-      await writeToDB(
-        client,
-        collection,
-        allItems,
-        userEmail,
-        items == "tracks" ? name : undefined
-      );
+    const written =
+      items == "tracks" ?
+        await writeToDB(client, collection, allItems, userEmail,name) :
+        await writeToDB(client, collection, allItems, userEmail);
 
-    written ?
+    console.log(`written: ${written}`)
+    await written ?
       isValidConnection = true :
       console.log("Unable to write to DB :(");
   }// if
