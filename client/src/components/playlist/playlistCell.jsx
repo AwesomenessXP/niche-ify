@@ -10,15 +10,17 @@ const spotifyApi = new Spotify();
 
 // define an artist class
 class Artist {
-  constructor(artistName, artistID, followCount) {
+  constructor(artistName, artistID, relatedArtists, followCount) {
     this.artistName = artistName;
     this.artistID = artistID;
+    this.relatedArtists = relatedArtists;
     this.followCount = followCount;
   }
 }
 
 /**
  * Displays one playlist cell
+ * When niche-ify button is clicked -> generate a new playlist for the user
  * @param {token} use token for spotify api requests
  */
 export const PlaylistCell = ({ token }) => {
@@ -37,33 +39,43 @@ export const PlaylistCell = ({ token }) => {
     let uniqueArtists = new Set(artistsID);
     uniqueArtists = Array.from(uniqueArtists);
 
-    // get all related artists
+    //------------------- GET ALL ARTISTS ---------------------------------
     let i = -1;
     const promises = uniqueArtists.map(async (artist) => {
-      const artistsRelatedArtists = await spotifyApi.getArtistRelatedArtists(artist);
-      const artistFollowers = (await spotifyApi.getArtist(artist)).followers.total;
+      const artistsRelatedArtists = await spotifyApi
+        .getArtistRelatedArtists(artist);
+      const artistFollowers = (await spotifyApi.getArtist(artist))
+        .followers.total;
       i++;
-      return {
-        artistName: artistsName[i],
-        artistID: artistsID[i],
-        relatedArtists: await artistsRelatedArtists.artists,
-        followCount: await artistFollowers,
-      };
+      // returns an Artist object w/ data to be used in the algorithm
+      return new Artist(
+        artistsName[i],
+        artistsID[i],
+        await artistsRelatedArtists.artists,
+        await artistFollowers,
+      );
       
     });
 
     const followers = await Promise.all(promises);
 
+    // ------------------ NICHE-IFY ARTISTS ------------------------------------
     const replace2Niche = await followers.map((artist) => {
-      const { artistName, artistID, relatedArtists, followCount } = artist;
-      let smallestArtist = new Artist(artistName, artistID, followCount);
+      const { relatedArtists } = artist;
+      let smallestArtist = artist;
 
+      // wrap the loop in a while loop
+      // condition is smallestArtist.followCount > criteria
+
+      // compare related artists with smallestArtist
+      // save the smallest artist
       if (relatedArtists.length > 0) {
-        relatedArtists.forEach(relatedArtist => {
+        relatedArtists.forEach(async relatedArtist => {
           const { name, id, followers } = relatedArtist;
           const totalFollowers = followers.total;
           if (smallestArtist.followCount > totalFollowers) {
-            smallestArtist = new Artist(name, id, totalFollowers);
+            // problem: find a way to work around api rate limit (calls per 30s)
+            smallestArtist = new Artist(name, id, [], totalFollowers);
           }
         })
       }

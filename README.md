@@ -85,9 +85,9 @@ let criteria = 10k followers
 for (artists in playlist) { O(n)
     smallest_artist = current artist
     while (smallest_artist > criteria) { O(n)
-    fetch related artists - O(1)
+    //fetch related artists - O(1)
     // compare current artist with smallest_artist - O(1) (max # of related artists is 20)
-    save new smallest current artist
+    //save new smallest current artist
     }
     return smallest artist;
 }// for
@@ -101,4 +101,17 @@ find the artist with smallest number of followers
 check if the artist meets the criteria (lets say <= 10k)
 if no artists meet criteria, return the original artist (array.length = 0)
 
+##### Edge cases to consider with this algorithm:
+- [ ] All tracks in the playlist have the same artist
+    - will only return *one* track from one related artist
+    - needs to diversify playlist with other artists
 
+- [ ] Current artist has no related artist array and/or meets the criteria
+    - keep the current artist [ ]
+    - find another artist from the same genre that has related artists (this will be another algorithm)
+
+- [ ] Current artist and their related artists DON'T match the criteria
+    - find another artist from the same genre
+
+- [ ] Related artist is already in the user's playlist!
+    - return the next least popular artist in the related artist array
