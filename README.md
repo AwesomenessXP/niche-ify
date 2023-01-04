@@ -7,18 +7,18 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
 - The most challenging part of this project right now is setting up authentication
 - I realize I should be more familiar with REST architecture and how to use axios
 - API: includes uri, http verb (GET, POST, DELETE), header, body (the data)
-- Spotify authentication requires multiple steps:
+- Spotify authentication requires multiple steps
     - Choose authorization for long running apps (requests are in Node)
-    - 1) 
-        - ------------ REQUEST USER CODE  --------------------------
-        - request user auth in Node
-        - create an endpoint (ex: '/login/') with GET request
-        - use query params stated in the docs
-        - NOTE: "redirect_uri" param will take you the specified page AFTER auth
-        - redirect to 'https://accounts.spotify.com/authorize?' with query params following the uri
-        - -------------RESPONSE:------------------------------
-        - response will have two query params: code (can be exchanged for access token) and state
-    - 2) 
+
+##### Request User Code
+- request user auth in Node
+- create an endpoint (ex: '/login/') with GET request
+- use query params stated in the docs
+- NOTE: "redirect_uri" param will take you the specified page AFTER auth
+- redirect to 'https://accounts.spotify.com/authorize?' with query params following the uri
+- -------------RESPONSE:------------------------------
+- response will have two query params: code (can be exchanged for access token) and state
+
         - ------------ REQUEST ACCESS TOKEN --------------------------
         - here, you exchange auth code for access token
         - make endpoint with POST request
@@ -30,7 +30,7 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
             - scope
             - expires_in
             - refresh_token
-    - 3) 
+
         - ------------ REQUEST REFRESH TOKEN -------------------------- 
         - when the user logs in again, either refresh token or keep old one
         - refreshing token is how we get persistence after logging in
@@ -93,8 +93,8 @@ for (artists in playlist) { O(n)
 }// for
 ```
 
-(Greedy method): while the number of followers is less than criteria,
-                continue fetching related artist data
+(Greedy method): while the number of followers is less than criteria, continue fetching related artist data
+
 Summary:
 call API to get how many followers each artist have
 find the artist with smallest number of followers
@@ -107,7 +107,7 @@ if no artists meet criteria, return the original artist (array.length = 0)
     - needs to diversify playlist with other artists
 
 - [ ] Current artist has no related artist array and/or meets the criteria
-    - keep the current artist [ ]
+    - keep the current artist
     - find another artist from the same genre that has related artists (this will be another algorithm)
 
 - [ ] Current artist and their related artists DON'T match the criteria
