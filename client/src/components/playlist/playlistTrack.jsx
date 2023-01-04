@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
  * @returns single cell containing playlist info and name
  */
 export const PlaylistTrack = ({ playlist, token}) => {
-  
+
     //fetch all songs from a specific playlist given the id
   const getPlaylistTracks = async (playlistID, playlistName) => {
     if (token != null) {
@@ -18,7 +18,7 @@ export const PlaylistTrack = ({ playlist, token}) => {
           await axios.get(
             `/playlist_tracks?token=${token}&id=${playlistID}&name=${playlistName}`
           );
-        const playlistTrack = await playlistTrackData.data[0].playlist_tracks
+        const playlistTrack = await playlistTrackData.data[0].playlist_tracks;
         // before setting playlist, check if the track is in localStorage
         localStorage.setItem('selected_playlist', JSON.stringify(await playlistTrack));
         localStorage.setItem(`selected_name`, playlistName);  
@@ -32,10 +32,11 @@ export const PlaylistTrack = ({ playlist, token}) => {
   return (
     <div>
       <label key={playlist.id}>{playlist.name}</label>
-      <Link to={`nicheify_${playlist.name}`}><button onClick={() =>
+      <Link to={`nicheify_${playlist.name}`}>
+        <button onClick={() =>
         getPlaylistTracks(playlist.id, playlist.name)}
-      >
-        Pick
+        >
+          Pick
         </button></Link>
       <hr />
     </div>

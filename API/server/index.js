@@ -73,7 +73,7 @@ app.get('/playlist_tracks', async (req, res) => {
   spotifyApi.setAccessToken(token);
 
   // get all playlist tracks
-  const playlistTrackData = (spotifyApi.getPlaylistTracks(id)).body;
+  const playlistTrackData = (await spotifyApi.getPlaylistTracks(id)).body;
   const userEmail = (await spotifyApi.getMe()).body.email;
 
   // write once to DB
