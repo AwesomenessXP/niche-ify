@@ -11,41 +11,43 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
     - Choose authorization for long running apps (requests are in Node)
 
 ##### Request User Code
-- request user auth in Node
-- create an endpoint (ex: '/login/') with GET request
-- use query params stated in the docs
-- NOTE: "redirect_uri" param will take you the specified page AFTER auth
-- redirect to 'https://accounts.spotify.com/authorize?' with query params following the uri
-- -------------RESPONSE:------------------------------
-- response will have two query params: code (can be exchanged for access token) and state
+1. Request user auth in Node
+2. Create an endpoint (ex: '/login/') with GET request
+3. Use query params stated in the docs
+*NOTE: "redirect_uri" param will take you the specified page AFTER auth*
+4. redirect to 'https://accounts.spotify.com/authorize?' with query params following the uri
 
-        - ------------ REQUEST ACCESS TOKEN --------------------------
-        - here, you exchange auth code for access token
-        - make endpoint with POST request
-        - body must be encoded with "application/x-www-form-urlencoded"
-        - -------------RESPONSE:------------------------------
-        - in response body (data in axios): 
-            - access_token
-            - token_type
-            - scope
-            - expires_in
-            - refresh_token
+## Response
+Response will have two query params: code (can be exchanged for access token) and state
 
-        - ------------ REQUEST REFRESH TOKEN -------------------------- 
-        - when the user logs in again, either refresh token or keep old one
-        - refreshing token is how we get persistence after logging in
-        - in response body (data in axios): 
-            - access_token
-            - token_type
-            - scope
-            - expires_in
-            - refresh_token
-- After authentication we need 4 things in localStorage: store the refresh token, access token, and expiration of token, and timestamp for persisting data
-- Local storage (React app):
-    - 0) use localStorage (stores in key/value pairs)
-    - 1) first time user logs in: store access token and refresh token from URL query params
-    - 2) store a timestamp (using Date().now) in localStoarge bc tokens expire after an hour
-    - 3) before using an access token to make a request to API:
+## Request Access Token
+Here, you exchange auth code for access token
+1. make endpoint with POST request
+2. body must be encoded with "application/x-www-form-urlencoded"
+
+## Response
+In response body (data in axios): 
+- access_token
+- token_type
+- scope
+- expires_in
+- refresh_token
+
+## Request Refresh Token
+*refreshing token is how we persist data after logging in*
+1. when the user logs in again, either refresh token or keep old one
+2. in response body (data in axios): 
+    - access_token
+    - token_type
+    - scope
+    - expires_in
+    - refresh_token
+3. After authentication we need 4 things in localStorage: store the refresh token, access token, and expiration of token, and timestamp for persisting data
+4. Local storage (React app):
+    1. use localStorage (stores in key/value pairs)
+    2. first time user logs in: store access token and refresh token from URL query params
+    3. store a timestamp (using Date().now) in localStoarge bc tokens expire after an hour
+    4. before using an access token to make a request to API:
         - check if there is timestamp and access token in localStorage
         - check if token is valid (use difference between Date.now() and timestamp)
         - if access token is valid, use that
@@ -72,7 +74,7 @@ I saved it in localStorage to persist between sessions
 - I also did not add an outlet in the parent component, thus the nested component couldnt be rendered
 
 # 1/4/23
-##### Algorithm for Niche-ify!
+## Algorithm for Niche-ify!
 Contraints: number of API requests made in 30s
 For each artistID, check if they HAVE any related artists (greater than 0)
 if they have related artists:
@@ -101,7 +103,7 @@ find the artist with smallest number of followers
 check if the artist meets the criteria (lets say <= 10k)
 if no artists meet criteria, return the original artist (array.length = 0)
 
-##### Edge cases to consider with this algorithm:
+## Edge cases to consider with this algorithm:
 - [ ] All tracks in the playlist have the same artist
     - will only return *one* track from one related artist
     - needs to diversify playlist with other artists
