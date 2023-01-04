@@ -1,7 +1,7 @@
 import { useEffect, useState} from "react"
 import { Routes, Route} from 'react-router-dom';
 import { UserPlaylist } from "../playlist/playlistPage";
-import { ShowOnePlaylist } from '../playlist/playlist';
+import { PlaylistCell } from '../playlist/playlistCell';
 import axios from 'axios';
 const Spotify = require('spotify-web-api-js');
 const spotifyApi = new Spotify();
@@ -30,8 +30,8 @@ export const GetUserPlaylists = ({ token }) => {
           // filter to playlists ONLY OWNED by the user
           const sendPlaylists = await allPlaylists.data[0].playlists
             .filter(playlist => {
-            return playlist.owner.display_name === `${me.id}`;
-          });
+              return playlist.owner.display_name === `${me.id}`;
+            });
 
           // set the state of playlists
           setListOfPlaylists(await sendPlaylists);
@@ -50,7 +50,7 @@ export const GetUserPlaylists = ({ token }) => {
           token={token}
       />}>
         <Route path={`nicheify_${localStorage.getItem('selected_name')}`}
-          element={<ShowOnePlaylist />}
+          element={<PlaylistCell token={token} />}
         />
       </Route>
     </Routes>

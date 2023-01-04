@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from 'react';
 const Spotify = require('spotify-web-api-js');
 const spotifyApi = new Spotify();
 
@@ -8,7 +7,22 @@ const spotifyApi = new Spotify();
  * @param {Array} playlistTracks 
  * @returns 
  */
-export const ShowOnePlaylist = () => {
+
+// define an artist class
+class Artist {
+  constructor(artistName, artistID, followCount) {
+    this.artistName = artistName;
+    this.artistID = artistID;
+    this.followCount = followCount;
+  }
+}
+
+/**
+ * Displays one playlist cell
+ * @param {token} use token for spotify api requests
+ */
+export const PlaylistCell = ({ token }) => {
+  spotifyApi.setAccessToken(token);
   const name = localStorage.getItem('selected_name');
   const tracks = JSON.parse(localStorage.getItem('selected_playlist'));
 
@@ -33,7 +47,6 @@ export const ShowOnePlaylist = () => {
     });
 
     let relatedArtists = await Promise.all(promises);
-    console.log(relatedArtists.length)
     // get follow count
     const followerPromise = relatedArtists.map(async (artist) => {
       const { artistID } = artist;
@@ -72,20 +85,15 @@ export const ShowOnePlaylist = () => {
 
     const replace2Niche = await followers.map((artist) => {
       const { artistName, artistID, relatedArtists, followCount } = artist;
-      let smallestArtist = {
-        artistName: artistName,
-        artistID: artistID,
-        followCount: followCount
-      }
-      
+      let smallestArtist = new Artist(artistName, artistID, followCount);
+
       if (relatedArtists.length > 0) {
         relatedArtists.forEach(relatedArtist => {
-          if (smallestArtist.followCount > relatedArtist.followers.total) {
-            smallestArtist = {
-              artistName: relatedArtist.name,
-              artistID: relatedArtist.id,
-              followCount: relatedArtist.followers.total
-          }}
+          const { name, id, followers } = relatedArtist;
+          const totalFollowers = followers.total;
+          if (smallestArtist.followCount > totalFollowers) {
+            smallestArtist = new Artist(name, id, totalFollowers);
+          }
         })
       }
       return smallestArtist;
