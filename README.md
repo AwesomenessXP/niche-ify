@@ -76,14 +76,22 @@ I saved it in localStorage to persist between sessions
 # 1/4/23
 ## Algorithm for Niche-ify!
 Contraints: number of API requests made in 30s
+
 For each artistID, check if they HAVE any related artists (greater than 0)
-if they have related artists:
-outer loop: for every artist in array -> fetch array of related artists - O(n)
+
+If they have related artists:
+
+- Outer loop: for every artist in array -> fetch array of related artists - O(n)
+
 - COMPARE current artist with related artists -> save smallest artist
-nested loop: compare least popular artist with all related artists - O(n)
------ repeat nested loops until criteria met ----------- O(n)
-let criteria = 10k followers
+
+- Nested loop: compare least popular artist with all related artists - O(n)
+
+*repeat nested loops until criteria met --- O(n)*
+
+Pseudocode:
 ```javascript
+let criteria = 10000; // 10k followers
 for (artists in playlist) { O(n)
     smallest_artist = current artist
     while (smallest_artist > criteria) { O(n)
