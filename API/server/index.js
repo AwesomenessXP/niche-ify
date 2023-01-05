@@ -42,7 +42,7 @@ app.get('/playlists', async (req, res) => {
   // write to DB once
   await client.connect();
   const { resultLength, collection } = await connectToDB(client, 'all_playlists');
-  const { limit, total } = playlistData;
+  const { limit, total } = await playlistData;
 
   const { validConnection } = await requestItems(
     token,
@@ -83,7 +83,7 @@ app.get('/playlist_tracks', async (req, res) => {
     'playlist_tracks',
     name
   );
-  const { limit, total } = playlistTrackData;
+  const { limit, total } = await playlistTrackData;
 
   const { validConnection } = await requestItems(
     token,

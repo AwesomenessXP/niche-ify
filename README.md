@@ -10,11 +10,10 @@ Niche-ify your spotify playlists by replacing all your mainstream artists with n
 - Spotify authentication requires multiple steps
     - Choose authorization for long running apps (requests are in Node)
 
-##### Request User Code
+## Request User Code
 1. Request user auth in Node
 2. Create an endpoint (ex: '/login/') with GET request
-3. Use query params stated in the docs
-*NOTE: "redirect_uri" param will take you the specified page AFTER auth*
+3. Use query params stated in the docs. *NOTE: "redirect_uri" param will take you the specified page AFTER auth*
 4. redirect to 'https://accounts.spotify.com/authorize?' with query params following the uri
 
 ## Response
@@ -66,46 +65,49 @@ In response body (data in axios):
 - the most challenging part was conditionally routing different components -> used "Navigate to" in else statement when specifing an element in Route component
 
 # 12/30/22
-- I finally fixed the bug that I've been dealing with all week!!
+- I finally fixed the bug that I've been dealing with all week
 - Problem: refreshing the page also resets the component
 - Cause: states in React DO NOT persist after refreshing!!
-- instead of creating new states for the selected playlist and tracks, 
-I saved it in localStorage to persist between sessions
+- instead of creating new states for the selected playlist and tracks, I saved it in localStorage to persist between sessions
 - I also did not add an outlet in the parent component, thus the nested component couldnt be rendered
 
 # 1/4/23
+- I refactored artist data to be it's own class: Artist
+- One major issue the app has right now is the API not properly working after the initial redirecting to playlists page
+
 ## Algorithm for Niche-ify!
 Contraints: number of API requests made in 30s
 
-For each artistID, check if they HAVE any related artists (greater than 0)
+For each artistID, check if they HAVE any related artists (greater than 0) - O(n)
 
 If they have related artists:
 
 - Outer loop: for every artist in array -> fetch array of related artists - O(n)
 
-- COMPARE current artist with related artists -> save smallest artist
+- Nested loop: current artist with related artists -> save smallest artist - O(n)
 
-- Nested loop: compare least popular artist with all related artists - O(n)
+*repeat nested loop until criteria met - O(n)*
 
-*repeat nested loops until criteria met --- O(n)*
+(unoptimized) runtime: O(n^3)
 
-Pseudocode:
+##### Pseudocode:
 ```javascript
 let criteria = 10000; // 10k followers
 for (artists in playlist) { O(n)
     smallest_artist = current artist
     while (smallest_artist > criteria) { O(n)
-    //fetch related artists - O(1)
-    // compare current artist with smallest_artist - O(1) (max # of related artists is 20)
-    //save new smallest current artist
+        //fetch related artists - O(1)
+        // compare current artist with smallest_artist - O(1) 
+        //save new smallest current artist
     }
     return smallest artist;
 }// for
 ```
 
-(Greedy method): while the number of followers is less than criteria, continue fetching related artist data
+##### Greedy method: 
+- while the number of followers is less than criteria, continue fetching related artist data
 
-Summary:
+## Summary:
 call API to get how many followers each artist have
 find the artist with smallest number of followers
 check if the artist meets the criteria (lets say <= 10k)
@@ -113,7 +115,7 @@ if no artists meet criteria, return the original artist (array.length = 0)
 
 ## Edge cases to consider with this algorithm:
 - [ ] All tracks in the playlist have the same artist
-    - will only return *one* track from one related artist
+    - Problem: will only return *one* track from one related artist
     - needs to diversify playlist with other artists
 
 - [ ] Current artist has no related artist array and/or meets the criteria

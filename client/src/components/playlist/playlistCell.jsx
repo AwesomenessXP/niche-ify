@@ -8,7 +8,7 @@ const spotifyApi = new Spotify();
  * @returns 
  */
 
-// define an artist class
+// define Artist class
 class Artist {
   constructor(artistName, artistID, relatedArtists, followCount) {
     this.artistName = artistName;
@@ -72,16 +72,17 @@ export const PlaylistCell = ({ token }) => {
       if (relatedArtists.length > 0) {
         relatedArtists.forEach(async relatedArtist => {
           const { name, id, followers } = relatedArtist;
-          const totalFollowers = followers.total;
-          if (smallestArtist.followCount > totalFollowers) {
+          const total = followers.total;
+          if (smallestArtist.followCount > total) {
             // problem: find a way to work around api rate limit (calls per 30s)
-            smallestArtist = new Artist(name, id, [], totalFollowers);
+            smallestArtist = new Artist(name, id, [], total);
           }
         })
       }
       return smallestArtist;
     });
 
+    // Update playlist tracks here:
     const nicheArtists = await Promise.all(replace2Niche);
     nicheArtists.forEach(nicheArtist => {
       console.log(nicheArtist)

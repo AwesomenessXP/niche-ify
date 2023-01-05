@@ -1,5 +1,6 @@
 import { PlaylistTrack } from './playlistTrack';
 import { Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
 
 /**
  * Get user playlists after redirecting from auth
@@ -7,11 +8,8 @@ import { Outlet } from 'react-router-dom';
  * @param {string} playlistName
  * @returns 
  */
-export const UserPlaylist = ({
-  listOfPlaylists,
-  token
-  }) => {
-  
+export const UserPlaylist = ({ listOfPlaylists, token}) => {
+
   return (
     <div>
       <h1>Choose a playlist to niche-ify:</h1>

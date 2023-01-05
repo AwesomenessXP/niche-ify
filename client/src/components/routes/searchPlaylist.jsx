@@ -16,18 +16,17 @@ export const GetUserPlaylists = ({ token }) => {
   // initialize all states
   const [listOfPlaylists, setListOfPlaylists] = useState([{}]);
   spotifyApi.setAccessToken(token);
-  // happens any time the token is updated/modified
   // fetches all of the user's playlists and stores them
-  useEffect(() => { 
+  useEffect(() => {
     async function getPlaylists() {
-      // first check if the token exists, then ask server
+      // first check if the token exists, then call api
       if (token !== null) {
         try {
           // get all playlists followed/owned by user
           const allPlaylists = await axios.get(`/playlists?token=${token}`);
           // get user's display name
           const me = await spotifyApi.getMe();
-          // filter to playlists ONLY OWNED by the user
+          // filter: get playlists ONLY OWNED by the user
           const sendPlaylists = await allPlaylists.data[0].playlists
             .filter(playlist => {
               return playlist.owner.display_name === `${me.id}`;
@@ -41,6 +40,7 @@ export const GetUserPlaylists = ({ token }) => {
       }
     }
     getPlaylists();
+    
   }, [token]);
 
   return ( 
