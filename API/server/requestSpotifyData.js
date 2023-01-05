@@ -55,7 +55,7 @@ exports.requestItems = async (
     // write to DB
     const written =
       items == "tracks" ?
-        await writeToDB(client, collection, allItems, userEmail,name) :
+        await writeToDB(client, collection, allItems, userEmail, name) :
         await writeToDB(client, collection, allItems, userEmail);
 
     console.log(`written: ${written}`)

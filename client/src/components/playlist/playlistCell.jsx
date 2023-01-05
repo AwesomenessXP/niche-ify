@@ -75,6 +75,11 @@ export const PlaylistCell = ({ token }) => {
           const total = followers.total;
           if (smallestArtist.followCount > total) {
             // problem: find a way to work around api rate limit (calls per 30s)
+            // get the timeout from the response,
+            // set a timer to request api after that amt of time
+            // once problem is fixed:
+            // 1. get smallest artist's top tracks (randomly choose between them)
+            // 2. get smallest artist's related artists
             smallestArtist = new Artist(name, id, [], total);
           }
         })

@@ -1,6 +1,5 @@
 import { PlaylistTrack } from './playlistTrack';
 import { Outlet } from 'react-router-dom';
-import { useEffect } from 'react';
 
 /**
  * Get user playlists after redirecting from auth

@@ -8,106 +8,113 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
+// use cors, extract data from body
+app.use(cors());
+app.use(bodyParser.json());
+
 // import spotify
 const Spotify = require('spotify-web-api-node');
+const spotifyApi = new Spotify();
+const { requestItems } = require('./requestSpotifyData');
 
 // import mongodb
 const { MongoClient } = require("mongodb");
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
-// import spotify api
-const spotifyApi = new Spotify();
-
-// use cors, extract data from body
-app.use(cors());
-app.use(bodyParser.json());
-
 // connect to mongodb
-const {
-  connectToDB,
-  readFromDB,
-} = require('../db/mongoDB');
-
-const { requestItems } = require('./requestSpotifyData');
+const { connectToDB, readFromDB } = require('../db/mongoDB');
 
 // send user's data and playlists
 app.get('/playlists', async (req, res) => {
-  // init: make api req to spotify 
-  const { token } = req.query;
-  spotifyApi.setAccessToken(token);
-  const playlistData = (await spotifyApi.getUserPlaylists({limit: 50})).body;
-  const userEmail = (await spotifyApi.getMe()).body.email;
+  try {
+    // init: make api req to spotify 
+    const { token } = req.query;
+    spotifyApi.setAccessToken(token);
+    const playlistData = (await spotifyApi.getUserPlaylists({limit: 50})).body;
+    const userEmail = (await spotifyApi.getMe()).body.email;
 
-  // write to DB once
-  await client.connect();
-  const { resultLength, collection } = await connectToDB(client, 'all_playlists');
-  const { limit, total } = await playlistData;
+    // write to DB once
+    await client.connect();
+    const { resultLength, collection } = await connectToDB(client, 'all_playlists');
+    const { limit, total } = await playlistData;
 
-  const { validConnection } = await requestItems(
-    token,
-    client,
-    collection,
-    playlistData,
-    resultLength,
-    total,
-    limit,
-    "playlists",
-    userEmail,
-  );
+    const { validConnection } = await requestItems(
+      token,
+      client,
+      await collection,
+      playlistData,
+      await resultLength,
+      await total,
+      await limit,
+      "playlists",
+      await userEmail,
+    );
 
-  // after validating data, read from DB
-  const readAllPlaylists = await readFromDB(client, collection);
-  
-  readAllPlaylists && validConnection ?
-    res.send(await readAllPlaylists) :
-    res.send('Unable to fetch playlists');
+    // after validating data, read from DB
+    const readAllPlaylists = await readFromDB(client, await collection);
+    
+    readAllPlaylists && validConnection ?
+      res.send(await readAllPlaylists) :
+      res.send('Unable to fetch playlists');
 
-  await client.close();
+    await client.close();
+  }
+  catch (e) {
+    console.log("MUST FIX: This error has to be handled immediately.");
+    console.log("Responses from spotify API:")
+    console.log(`playlist_data: ${playlistData}`);
+    console.log(`userEmail: ${userEmail}`);
+    console.error(e);
+  }
 });
 
 // send user playlist tracks to client
 app.get('/playlist_tracks', async (req, res) => {
-  // in query params, get playlist id 
-  const { token, id, name } = req.query;
-  spotifyApi.setAccessToken(token);
+  try {
+    // in query params, get playlist id 
+    const { token, id, name } = req.query;
+    spotifyApi.setAccessToken(token);
 
-  // get all playlist tracks
-  const playlistTrackData = (await spotifyApi.getPlaylistTracks(id)).body;
-  const userEmail = (await spotifyApi.getMe()).body.email;
+    // get all playlist tracks
+    const playlistTrackData = (await spotifyApi.getPlaylistTracks(id)).body;
+    const userEmail = (await spotifyApi.getMe()).body.email;
 
-  // write once to DB
-  await client.connect();
-  const { resultLength, collection } = await connectToDB(
-    client,
-    'playlist_tracks',
-    name
-  );
-  const { limit, total } = await playlistTrackData;
+    // write once to DB
+    await client.connect();
+    const { resultLength, collection } = await connectToDB(
+      client,
+      'playlist_tracks',
+      name
+    );
+    const { limit, total } = await playlistTrackData;
 
-  const { validConnection } = await requestItems(
-    token,
-    client,
-    collection,
-    playlistTrackData,
-    resultLength,
-    total,
-    limit,
-    "tracks",
-    userEmail,
-    name,
-    id
-  );
+    const { validConnection } = await requestItems(
+      token,
+      client,
+      await collection,
+      playlistTrackData,
+      await resultLength,
+      await total,
+      await limit,
+      "tracks",
+      await userEmail,
+      name,
+      id
+    );
 
-  // after validating data, read from DB
-  const readPlaylistTracks = await readFromDB(client, collection, name);
+    // after validating data, read from DB
+    const readPlaylistTracks = await readFromDB(client, await collection, await name);
 
-  readPlaylistTracks && validConnection ?
-    res.send(await readPlaylistTracks) :
-    res.send('Unable to fetch playlists');
+    readPlaylistTracks && validConnection ?
+      res.send(await readPlaylistTracks) :
+      res.send('Unable to fetch playlists');
 
-  await client.close();
-
+    await client.close();
+  }
+  catch (e) {
+    console.error(e);
+  }
 });
 
 // generate random code for the state
