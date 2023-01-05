@@ -132,6 +132,6 @@ if no artists meet criteria, return the original artist (array.length = 0)
 
 I'm still having issues with the client not properly displaying data (status 500 error). This error occurs (assumably) after the access token is expired and the user didn't log out, and opens the home page again after expiration.
 
-My initial assumption was that this was a problem with the server. I set up logic to handle errors after the endpoint is accessed, however, no error message was displayed.
+My initial assumption was that this was a problem with the server, perhaps retrieving invalid data. I set up logic to handle errors after the endpoint is accessed, however, no error message was displayed.
 
-Another assumption I've yet to test is how the concurrency library crashes the app initially, maybe because of a race condition I'm unaware of? When I run the `npm start` command, it concurrently opens the server annd the client. So when I try to log in on the client side, the server might not be ready yet, thus giving me a status 500 error. This ties in with how the server works normally on subsequent refreshes or sign ins/outs.
+Another assumption I've yet to test is how the concurrency library crashes the app initially, maybe because of a race condition I'm unaware of? When I run the `npm start` command, it concurrently opens the server annd the client. So when the client opens in my browser, the server might not be ready yet, thus giving me a status 500 error. This ties in with how the server works normally on subsequent refreshes or sign ins/outs.

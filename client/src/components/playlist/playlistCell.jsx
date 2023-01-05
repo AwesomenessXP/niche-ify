@@ -42,8 +42,8 @@ export const PlaylistCell = ({ token }) => {
     //------------------- GET ALL ARTISTS ---------------------------------
     let i = -1;
     const promises = uniqueArtists.map(async (artist) => {
-      const artistsRelatedArtists = await spotifyApi
-        .getArtistRelatedArtists(artist);
+      const relatedArtists = (await spotifyApi
+        .getArtistRelatedArtists(artist)).artists;
       const artistFollowers = (await spotifyApi.getArtist(artist))
         .followers.total;
       i++;
@@ -51,8 +51,8 @@ export const PlaylistCell = ({ token }) => {
       return new Artist(
         artistsName[i],
         artistsID[i],
-        await artistsRelatedArtists.artists,
-        await artistFollowers,
+        relatedArtists,
+        artistFollowers,
       );
       
     });
@@ -60,34 +60,32 @@ export const PlaylistCell = ({ token }) => {
     const followers = await Promise.all(promises);
 
     // ------------------ NICHE-IFY ARTISTS ------------------------------------
-    const replace2Niche = await followers.map((artist) => {
-      const { relatedArtists } = artist;
-      let smallestArtist = artist;
-
-      // wrap the loop in a while loop
-      // condition is smallestArtist.followCount > criteria
-
-      // compare related artists with smallestArtist
-      // save the smallest artist
-      if (relatedArtists.length > 0) {
-        relatedArtists.forEach(async relatedArtist => {
-          const { name, id, followers } = relatedArtist;
+    const replace2Niche = await followers.map(async (artist) => {
+      let { artistName, artistID, relatedArtists, followCount } = artist;
+      let smallestArtist = new Artist(artistName, artistID, relatedArtists, followCount);
+      console.log('main loop');
+      
+      // while (smallestArtist.followCount > 20000) {
+        console.log('outer loop');
+        // filter through the array and find least popular artist
+        for (let i = 0; i < relatedArtists.length; i++) {
+          console.log('inner loop')
+          const { followers, name, id } = relatedArtists[i];
           const total = followers.total;
+          // if the related artist is smaller, save that as the smallestArtist
           if (smallestArtist.followCount > total) {
-            // problem: find a way to work around api rate limit (calls per 30s)
-            // get the timeout from the response,
-            // set a timer to request api after that amt of time
-            // once problem is fixed:
-            // 1. get smallest artist's top tracks (randomly choose between them)
-            // 2. get smallest artist's related artists
             smallestArtist = new Artist(name, id, [], total);
           }
-        })
-      }
+        }
+        
+        // after finding least popular artist, set their relatedArtists
+        relatedArtists = (await spotifyApi.getArtistRelatedArtists(smallestArtist.artistID)).artists;
+      // }
+      
       return smallestArtist;
     });
 
-    // Update playlist tracks here:
+    //Update playlist tracks here:
     const nicheArtists = await Promise.all(replace2Niche);
     nicheArtists.forEach(nicheArtist => {
       console.log(nicheArtist)

@@ -33,7 +33,7 @@ export const GetUserPlaylists = ({ token }) => {
             });
 
           // set the state of playlists
-          setListOfPlaylists(sendPlaylists);
+          setListOfPlaylists(await sendPlaylists);
         } catch (e) {
           console.error(e);
         }
