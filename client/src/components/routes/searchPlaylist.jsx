@@ -50,7 +50,8 @@ export const GetUserPlaylists = ({ token }) => {
           token={token}
       />}>
         <Route path={`nicheify_${localStorage.getItem('selected_name')}`}
-          element={<PlaylistCell token={token} />}
+          element={<PlaylistCell listOfPlaylists={listOfPlaylists} setListOfPlaylists={setListOfPlaylists}
+            token={token} />}
         />
       </Route>
     </Routes>

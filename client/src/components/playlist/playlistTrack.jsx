@@ -43,6 +43,7 @@ export const PlaylistTrack = ({ playlist, token}) => {
   return (
     <div>
       <label key={playlist.id}>{playlist.name}</label>
+      <label>{playlist.artistName}-{playlist.followCount}-{playlist.artistID}</label>
       <Link to={`nicheify_${playlist.name}`}>
         <button onClick={() =>
         getPlaylistTracks(playlist.id, playlist.name)}

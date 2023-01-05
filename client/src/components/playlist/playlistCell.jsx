@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 const Spotify = require('spotify-web-api-js');
 const spotifyApi = new Spotify();
 
@@ -23,7 +24,7 @@ class Artist {
  * When niche-ify button is clicked -> generate a new playlist for the user
  * @param {token} use token for spotify api requests
  */
-export const PlaylistCell = ({ token }) => {
+export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => {
   spotifyApi.setAccessToken(token);
 
   // get the user's selected playlist and name
@@ -33,78 +34,77 @@ export const PlaylistCell = ({ token }) => {
   // logic for filtering artists and displaying "nicheified" artists
   async function nicheify() {
     // get list of all artists
-    let artistsID = tracks.map(track => track.track.artists[0].id);
-    artistsID = new Set(artistsID);
-    artistsID = Array.from(artistsID);
-
-    let artistsName = tracks.map(track => track.track.artists[0].name);
-    artistsName= new Set(artistsName);
-    artistsName = Array.from(artistsName);
-    // // remove dupes
-    let uniqueArtists = new Set(artistsID);
-      uniqueArtists = Array.from(uniqueArtists);
+    let artistsIDs = tracks.map(track => track.track.artists[0].id);
+    artistsIDs = new Set(artistsIDs);
+    artistsIDs = Array.from(artistsIDs);
 
     //------------------- GET ALL ARTISTS ---------------------------------
-    let i = -1;
-    const promises = uniqueArtists.map(async (artist) => {
-      const relatedArtists = (await spotifyApi
-        .getArtistRelatedArtists(artist)).artists;
+    const promises = artistsIDs.map(async (artist) => {
       
-      const artistFollowers = (await spotifyApi.getArtist(artist)).followers.total;
+      const related = await spotifyApi
+        .getArtistRelatedArtists(artist);
+      const relatedArtists = await related.artists;
+      const artistData = await spotifyApi.getArtist(artist);
+      const followers = await artistData.followers.total;
 
-      i++;
+      
       // returns an Artist object w/ data to be used in the algorithm
       return new Artist(
-        artistsName[i],
-        artistsID[i],
+        await artistData.name,
+        await artistData.id,
         await relatedArtists,
-        await artistFollowers,
+        await followers,
       );
       
     });
 
-    const followers = await Promise.all(promises);
-
+    const followers = await Promise.all(await promises);
+    const followers2 = JSON.parse(JSON.stringify(followers));
     // // ------------------ NICHE-IFY ARTISTS ------------------------------------
-    const replace2Niche = followers.map(async (artist) => {
-      let smallestArtist = artist;
-
-        while (smallestArtist.followCount > 20000 && smallestArtist.relatedArtists.length > 0) {
+    const replace2Niche = followers2.map(async (artist) => {
+      
+      if (artist.relatedArtists.length > 0) {
+        // let artist = Object.assign({}, artist);
+        // first, look for artist artist
+        while (artist.followCount > 20000 && artist.relatedArtists.length > 0) {
           console.log('outer loop');
-          console.log(`artist: ${smallestArtist.artistName}`)
           // filter through the array and find least popular artist
-          for (let i = 0; i < smallestArtist.relatedArtists.length; i++) {
+          for (let i = 0; i < artist.relatedArtists.length; i++) {
             console.log('inner loop')
-            const { followers, name, id } = smallestArtist.relatedArtists[i];
+            const { followers, name, id } = artist.relatedArtists[i];
+            // console.log(artist.relatedArtists[i])
             const total = followers.total;
-            // if the related artist is smaller, save that 
-            if (smallestArtist.followCount > total) {
-              smallestArtist = new Artist(name, id, [], total);
+            // if the related artist is smaller, save that
+            if (artist.followCount > total) {
+              artist = new Artist(name, id, [], total);
             }
           }
-          
-          // after finding least popular artist, set their relatedArtists
-          smallestArtist.relatedArtists = (await spotifyApi.getArtistRelatedArtists(smallestArtist.artistID)).artists;
-          
+          // then set their relatedArtists
+          const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
+          artist.relatedArtists = await related.artists;
         }
- 
-    
-      // console.log(`ungrateful artist: ${artistName}, follow count: ${followCount}`)
-      return smallestArtist;
-
+        return artist;
+      }
+      
+      // console.log(artist)
+      // else {
+      return artist;
+      // }
     });
 
     //Update playlist tracks here:
     const nicheArtists = await Promise.all(replace2Niche);
     nicheArtists.forEach(nicheArtist => {
-      console.log(nicheArtist)
+      console.log(nicheArtist);
     });
+    setListOfPlaylists(nicheArtists);
   }
+
   /* display all tracks from the playlist */
   return (
     <div>
       <h1>{name}</h1>
-      <button onClick={() => nicheify()}>NICHE-IFY</button>
+      <button onClick={async () => await nicheify()}>NICHE-IFY</button>
       {tracks.map(track => {
         return (
           <div key={track.track.id}>
