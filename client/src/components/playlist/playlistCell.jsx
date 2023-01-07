@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 const Spotify = require('spotify-web-api-js');
 const spotifyApi = new Spotify();
 
@@ -58,38 +57,36 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
       
     });
 
-    const followers = await Promise.all(await promises);
-    const followers2 = JSON.parse(JSON.stringify(followers));
-    // // ------------------ NICHE-IFY ARTISTS ------------------------------------
-    const replace2Niche = followers2.map(async (artist) => {
-      
-      if (artist.relatedArtists.length > 0) {
-        // let artist = Object.assign({}, artist);
-        // first, look for artist artist
-        while (artist.followCount > 20000 && artist.relatedArtists.length > 0) {
-          console.log('outer loop');
-          // filter through the array and find least popular artist
-          for (let i = 0; i < artist.relatedArtists.length; i++) {
-            console.log('inner loop')
-            const { followers, name, id } = artist.relatedArtists[i];
-            // console.log(artist.relatedArtists[i])
-            const total = followers.total;
-            // if the related artist is smaller, save that
-            if (artist.followCount > total) {
-              artist = new Artist(name, id, [], total);
-            }
+    const followers = await Promise.all(promises);
+
+    // look for artists with < 20k followers
+    const CRITERIA = 20000; 
+
+    // ------------------ NICHE-IFY ARTISTS ------------------------------------
+    
+    const replace2Niche = followers.map(async (artist) => {
+      // keep searching until the criteria is met
+      while (artist.followCount > CRITERIA && artist.relatedArtists.length > 0) {
+        // TODO: handle infinite loop if the smallest artist doesnt meet criteria
+        // filter through the array and find least popular artist
+        for (let i = 0; i < artist.relatedArtists.length; i++) {
+          console.log('inner loop');
+          const { followers, name, id } = artist.relatedArtists[i];
+          const total = followers.total;
+          console.log(`Name: ${name}, followers: ${total}`);
+
+          // if the related artist is smaller, save that
+          if (artist.followCount > total) {
+            artist = new Artist(name, id, [], total);
           }
-          // then set their relatedArtists
-          const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
-          artist.relatedArtists = await related.artists;
         }
-        return artist;
+
+        // then set their relatedArtists
+        const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
+        artist.relatedArtists = await related.artists;
       }
-      
-      // console.log(artist)
-      // else {
+
       return artist;
-      // }
     });
 
     //Update playlist tracks here:
@@ -97,7 +94,6 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
     nicheArtists.forEach(nicheArtist => {
       console.log(nicheArtist);
     });
-    setListOfPlaylists(nicheArtists);
   }
 
   /* display all tracks from the playlist */
