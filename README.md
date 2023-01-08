@@ -116,11 +116,11 @@ if no artists meet criteria, return the original artist (array.length = 0)
 ## Edge cases to consider with this algorithm:
 - [ ] All tracks in the playlist have the same artist
     - [ ] Problem: will only return *one* track from one related artist
-    - needs to diversify playlist with other artists
+    - [ ] needs to diversify playlist with other artists
 
 - [ ] Current artist has no related artist array and/or meets the criteria
-    - [x] keep the current artist
-    - find another artist from the same genre that has related artists (this will be another algorithm)
+    - [✅] keep the current artist
+    - [ ] find another artist from the same genre that has related artists (this will be another algorithm)
 
 - [ ] Current artist and their related artists DON'T match the criteria
     - [ ] find another artist from the same genre
