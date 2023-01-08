@@ -36,6 +36,7 @@ export const GetUserPlaylists = ({ token }) => {
           setListOfPlaylists(await sendPlaylists);
         } catch (e) {
           console.error(e);
+          console.log("Error on client side");
         }
       }
     }

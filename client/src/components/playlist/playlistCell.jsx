@@ -53,37 +53,40 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
         await relatedArtists,
         await followers,
       );
-      
     });
 
     const followers = await Promise.all(promises);
 
     // look for artists with < 20k followers
-    const CRITERIA = 20000; 
+    const CRITERIA = 10000; 
 
     // ------------------ NICHE-IFY ARTISTS ------------------------------------
-    
+    // TODO: handle infinite loop if the smallest artist doesnt meet criteria
     const replace2Niche = followers.map(async (artist) => {
-      // keep searching until the criteria is met
+      // keep searching for artists until the criteria is met
       while (artist.followCount > CRITERIA && artist.relatedArtists.length > 0) {
-        // TODO: handle infinite loop if the smallest artist doesnt meet criteria
         // filter through the array and find least popular artist
+        console.log("outer loop");
+        let replaced = false;
         for (let i = 0; i < artist.relatedArtists.length; i++) {
           console.log('inner loop');
           const { followers, name, id } = artist.relatedArtists[i];
           const total = followers.total;
           console.log(`Name: ${name}, followers: ${total}`);
-
           // if the related artist is smaller, save that
           if (artist.followCount > total) {
             artist = new Artist(name, id, [], total);
+            replaced = true;
           }
-        }
+        }// for
+
+        // stop searching if the artist is smaller than all of their related artists
+        if (!replaced) break;
 
         // then set their relatedArtists
         const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
         artist.relatedArtists = await related.artists;
-      }
+      }// while
 
       return artist;
     });
