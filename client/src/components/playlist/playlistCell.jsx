@@ -45,7 +45,6 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
       const relatedArtists = await related.artists;
       const artistData = await spotifyApi.getArtist(artist);
       const followers = await artistData.followers.total;
-
       
       // returns an Artist object w/ data to be used in the algorithm
       return new Artist(

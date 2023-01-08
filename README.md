@@ -135,3 +135,11 @@ I'm still having issues with the client not properly displaying data (status 500
 My initial assumption was that this was a problem with the server, perhaps retrieving invalid data. I set up logic to handle errors after the endpoint is accessed, however, no error message was displayed.
 
 Another assumption I've yet to test is how the concurrency library crashes the app initially, maybe because of a race condition I'm unaware of? When I run the `npm start` command, it concurrently opens the server annd the client. So when the client opens in my browser, the server might not be ready yet, thus giving me a status 500 error. This ties in with how the server works normally on subsequent refreshes or sign ins/outs.
+
+# 1/7/23
+
+## Bug
+One major bug I had in the niche-ify algorithm was that each Artist would have the same follower count, but different artist names. I observed that each time it generated a list, the names would always get mixed up! At first, I thought the bug occured in the filtering part of the algorithm, where it looks for each artist's related artists. I managed to isolate the problem as a logic error due to promises. I had an Artist return its data, including its' name, which was used by indexing an array with a counter incrementing from `i=-1`. 
+
+## Fix
+Due to the asynchronous nature of promises, the processing time of each request varied greatly. I had my counter set up to increment by indexing *after* an API request, leading to all kinds of problems, such as artists having incorrect follower counts. In other words, the indexes in the array didn't line up in a loop that had asynchronous calls. To get the correct artist, I added another api request to each artist's data, and then get their name. This means that each iteration of the loop is independent, and doesn't depend on an outside array.
