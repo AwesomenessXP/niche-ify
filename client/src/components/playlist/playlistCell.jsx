@@ -23,9 +23,8 @@ class Artist {
  * When niche-ify button is clicked -> generate a new playlist for the user
  * @param {token} use token for spotify api requests
  */
-export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => {
+export const PlaylistCell = ({ token }) => {
   spotifyApi.setAccessToken(token);
-
   // get the user's selected playlist and name
   const name = localStorage.getItem('selected_name');
   const tracks = JSON.parse(localStorage.getItem('selected_playlist'));
@@ -39,15 +38,14 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
 
     //------------------- GET ALL ARTISTS ---------------------------------
     const promises = artistsIDs.map(async (artist) => {
-      
-      const related = await spotifyApi
-        .getArtistRelatedArtists(artist);
-      const relatedArtists = await related.artists;
+
+      const related = await spotifyApi.getArtistRelatedArtists(artist);
+      const relatedArtists =  await related.artists;
       const artistData = await spotifyApi.getArtist(artist);
       const followers = await artistData.followers.total;
       
       // returns an Artist object w/ data to be used in the algorithm
-      return new Artist(
+      return new Artist (
         await artistData.name,
         await artistData.id,
         await relatedArtists,
@@ -58,10 +56,11 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
     const followers = await Promise.all(promises);
 
     // look for artists with < 20k followers
-    const CRITERIA = 10000; 
+    const CRITERIA = 10000;
 
     // ------------------ NICHE-IFY ARTISTS ------------------------------------
-    // TODO: handle infinite loop if the smallest artist doesnt meet criteria
+
+    // get each artist's related artists
     const replace2Niche = followers.map(async (artist) => {
       // keep searching for artists until the criteria is met
       while (artist.followCount > CRITERIA && artist.relatedArtists.length > 0) {
@@ -70,9 +69,9 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
         let replaced = false;
         for (let i = 0; i < artist.relatedArtists.length; i++) {
           console.log('inner loop');
+          // USE BACKOFF-RETRY STRAT HERE
           const { followers, name, id } = artist.relatedArtists[i];
           const total = followers.total;
-          console.log(`Name: ${name}, followers: ${total}`);
           // if the related artist is smaller, save that
           if (artist.followCount > total) {
             artist = new Artist(name, id, [], total);
@@ -83,7 +82,8 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
         // stop searching if the artist is smaller than all of their related artists
         if (!replaced) break;
 
-        // then set their relatedArtists
+        // then set the smallest artist's relatedArtists
+        // USE BACKOFF-RETRY STRAT HERE
         const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
         artist.relatedArtists = await related.artists;
       }// while
@@ -91,7 +91,7 @@ export const PlaylistCell = ({ listOfPlaylists, setListOfPlaylists, token }) => 
       return artist;
     });
 
-    //Update playlist tracks here:
+    // Update playlist tracks here:
     const nicheArtists = await Promise.all(replace2Niche);
     nicheArtists.forEach(nicheArtist => {
       console.log(nicheArtist);

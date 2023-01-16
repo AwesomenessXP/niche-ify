@@ -7,8 +7,8 @@ const DB_NAME = 'spotify_user_data';
 exports.connectToDB = async (client, collectionName, playlistName) => {
   try {
     console.log('Connected to server!');
-    const database = client.db(DB_NAME);
-    const collection = database.collection(collectionName);
+    const database = await client.db(DB_NAME);
+    const collection = await database.collection(collectionName);
 
     let findResult;
     if (playlistName != undefined) {

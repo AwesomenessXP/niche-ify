@@ -84,11 +84,11 @@ If they have related artists:
 
 - Outer loop: for every artist in array -> fetch array of related artists - O(n)
 
-- Nested loop: current artist with related artists -> save smallest artist - O(n)
-
+- Nested loop: current artist with related artists -> save smallest artist - O(1)
+    - Max number of related artists is 20, so it is constant time
 *repeat nested loop until criteria met - O(n)*
 
-(unoptimized) runtime: O(n^3)
+(unoptimized) runtime: O(n^2)
 
 ##### Pseudocode:
 ```javascript
@@ -114,12 +114,12 @@ check if the artist meets the criteria (lets say <= 10k)
 if no artists meet criteria, return the original artist (array.length = 0)
 
 ## Edge cases to consider with this algorithm:
-- [ ] All tracks in the playlist have the same artist
-    - [ ] Problem: will only return *one* track from one related artist
-    - [ ] needs to diversify playlist with other artists
+- [ ] All tracks in the playlist have the same artist, will only return *one* track from one related artist
+    - [ ] Current: tell user to choose a playlist with more than x number of artists
+    - [ ] Later: needs to diversify playlist with other artists
 
 - [ ] Current artist has no related artist array and/or meets the criteria
-    - [✅] keep the current artist
+    - [x] keep the current artist
     - [ ] find another artist from the same genre that has related artists (this will be another algorithm)
 
 - [ ] Current artist and their related artists DON'T match the criteria
@@ -127,6 +127,9 @@ if no artists meet criteria, return the original artist (array.length = 0)
 
 - [ ] Related artist is already in the user's playlist!
     - [ ] return the next least popular artist in the related artist array
+
+- [ ] A "small" artist contains the name of a "big" artist (such as a collab name with another artist)
+    - [ ] filter each "small" artist's name to exlude "big" artists in the name and find the next smallest artist
 
 # 1/5/23
 
@@ -143,3 +146,11 @@ One major bug I had in the niche-ify algorithm was that each Artist would have t
 
 ## Fix
 Due to the asynchronous nature of promises, the processing time of each request varied greatly. I had my counter set up to increment by indexing *after* an API request, leading to all kinds of problems, such as artists having incorrect follower counts. In other words, the indexes in the array didn't line up in a loop that had asynchronous calls. To get the correct artist, I added another api request to each artist's data, and then get their name. This means that each iteration of the loop is independent, and doesn't depend on an outside array.
+
+# 1/15/23
+I haven't worked on this project in a while (because of school), but I will be focusing on fixing 429 errors that I get when initially calling the API requests. I will have to use some kind of back-off/retry strategy. The hardest part about this is that I can't replicate the behavior after a few tries, because then spotify can handle all of it. The problem my app has is that it spams requests when looping through each artist/related artist, and is the source of my current problems.
+
+## Things I need to work on:
+- start designing the UI
+- restructure the schema for the DB (some are up to 2MB, which I want to avoid), improve query delay
+- after all of this is done, work on user features (adding niche-ified playlist to spotify, creating a new schema in the DB)

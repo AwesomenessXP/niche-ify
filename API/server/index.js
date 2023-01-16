@@ -45,10 +45,10 @@ app.get('/playlists', async (req, res) => {
       await collection,
       playlistData,
       await resultLength,
-      await total,
-      await limit,
+      total,
+      limit,
       "playlists",
-      await userEmail,
+      userEmail,
     );
 
     // after validating data, read from DB
@@ -62,9 +62,9 @@ app.get('/playlists', async (req, res) => {
   }
   catch (e) {
     console.log("MUST FIX: This error has to be handled immediately.");
-    console.log("Responses from spotify API:")
-    console.log(`playlist_data: ${playlistData}`);
-    console.log(`userEmail: ${userEmail}`);
+    console.log("Error from spotify API:")
+    // console.log(`playlist_data: ${await playlistData}`);
+    // console.log(`userEmail: ${await userEmail}`);
     console.error(e);
   }
 });
