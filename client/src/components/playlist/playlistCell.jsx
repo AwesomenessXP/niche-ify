@@ -1,6 +1,6 @@
+import axios from 'axios';
 const Spotify = require('spotify-web-api-js');
 const spotifyApi = new Spotify();
-
 /**
  * 
  * @param {string} playlistName 
@@ -84,21 +84,26 @@ export const PlaylistCell = ({ token }) => {
         // then set the smallest artist's relatedArtists
         // USE BACKOFF-RETRY STRAT HERE
         const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
-        const artistRef = artist;
+        const artistRef = JSON.parse(JSON.stringify(artist));
         const getResource = async () => {
           let related;
           try {
-            related = await spotifyApi.getArtistRelatedArtists(artistRef.artistID);
+            // related = await spotifyApi.getArtistRelatedArtists(artistRef.artistID);
+            related = await axios({
+              method: 'get',
+              baseURL: `https://api.spotify.com/v1/artists/${artistRef.artistID}/related-artists`,
+              headers: `Authorization: Bearer ${token}`,
+            });
           } catch (e) {
             console.log("ERROR: too many requests!:")
             console.log(e);
             await delay(10);
             await getResource(); // keep spamming until you get a response
           }
-          artistRef.relatedArtists = related.artists;
+          return await related.data.artists;
         }
 
-        await getResource();
+        artist.relatedArtists = await getResource();
         
         // ********* IN CASE OF ERROR, UNCOMMENT *****************
         // const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
