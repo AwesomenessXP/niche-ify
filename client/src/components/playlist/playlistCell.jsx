@@ -69,7 +69,6 @@ export const PlaylistCell = ({ token }) => {
         let replaced = false;
         for (let i = 0; i < artist.relatedArtists.length; i++) {
           console.log('inner loop');
-          // USE BACKOFF-RETRY STRAT HERE
           const { followers, name, id } = artist.relatedArtists[i];
           const total = followers.total;
           // if the related artist is smaller, save that
@@ -84,8 +83,26 @@ export const PlaylistCell = ({ token }) => {
 
         // then set the smallest artist's relatedArtists
         // USE BACKOFF-RETRY STRAT HERE
-        const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
-        artist.relatedArtists = await related.artists;
+        const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
+        const artistRef = artist;
+        const getResource = async () => {
+          let related;
+          try {
+            related = await spotifyApi.getArtistRelatedArtists(artistRef.artistID);
+          } catch (e) {
+            console.log("ERROR: too many requests!:")
+            console.log(e);
+            await delay(10);
+            await getResource(); // keep spamming until you get a response
+          }
+          artistRef.relatedArtists = related.artists;
+        }
+
+        await getResource();
+        
+        // ********* IN CASE OF ERROR, UNCOMMENT *****************
+        // const related = await spotifyApi.getArtistRelatedArtists(artist.artistID);
+        // artist.relatedArtists = await related.artists;
       }// while
 
       return artist;
