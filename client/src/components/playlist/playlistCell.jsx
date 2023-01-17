@@ -36,12 +36,50 @@ export const PlaylistCell = ({ token }) => {
     artistsIDs = new Set(artistsIDs);
     artistsIDs = Array.from(artistsIDs);
 
+    const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
+
     //------------------- GET ALL ARTISTS ---------------------------------
     const promises = artistsIDs.map(async (artist) => {
+      const getArtist = async () => {
+        let related;
+        try {
+          // related = await spotifyApi.getArtistRelatedArtists(artistRef.artistID);
+          related = await axios({
+            method: 'get',
+            baseURL: `https://api.spotify.com/v1/artists/${artist}`,
+            headers: `Authorization: Bearer ${token}`,
+          });
+        } catch (e) {
+          // ***** USE "headers" in axios to get "retry-after" time ********
+          console.log("ERROR: too many requests! Response from Spotify:")
+          console.log(e.response.headers['retry-after']);
+          await delay(e.response.headers['retry-after']);
+          await getArtist(); // keep spamming until you get a response
+        }
+        return await related.data;
+      }
+      const getRelated = async () => {
+        let related;
+        try {
+          // related = await spotifyApi.getArtistRelatedArtists(artistRef.artistID);
+          related = await axios({
+            method: 'get',
+            baseURL: `https://api.spotify.com/v1/artists/${artist}/related-artists`,
+            headers: `Authorization: Bearer ${token}`,
+          });
+        } catch (e) {
+          // ***** USE "headers" in axios to get "retry-after" time ********
+          console.log("ERROR: too many requests! Response from Spotify:")
+          console.log(e.response.headers['retry-after']);
+          await delay(e.response.headers['retry-after']);
+          await getRelated(); // keep spamming until you get a response
+        }
+        return await related.data;
+      }
 
-      const related = await spotifyApi.getArtistRelatedArtists(artist);
+      const related = await getRelated();
       const relatedArtists =  await related.artists;
-      const artistData = await spotifyApi.getArtist(artist);
+      const artistData = await getArtist();
       const followers = await artistData.followers.total;
       
       // returns an Artist object w/ data to be used in the algorithm
@@ -67,7 +105,7 @@ export const PlaylistCell = ({ token }) => {
         // filter through the array and find least popular artist
         console.log("outer loop");
         let replaced = false;
-        for (let i = 0; i < artist.relatedArtists.length; i++) {
+        for (let i = 0; i < artist.relatedArtists.length && !replaced; i++) {
           console.log('inner loop');
           const { followers, name, id } = artist.relatedArtists[i];
           const total = followers.total;
@@ -83,7 +121,6 @@ export const PlaylistCell = ({ token }) => {
 
         // then set the smallest artist's relatedArtists
         // USE BACKOFF-RETRY STRAT HERE
-        const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
         const artistRef = JSON.parse(JSON.stringify(artist));
         const getResource = async () => {
           let related;
@@ -95,9 +132,10 @@ export const PlaylistCell = ({ token }) => {
               headers: `Authorization: Bearer ${token}`,
             });
           } catch (e) {
-            console.log("ERROR: too many requests!:")
-            console.log(e);
-            await delay(10);
+            // ***** USE "headers" in axios to get "retry-after" time ********
+            console.log("ERROR: too many requests! Response from Spotify:")
+            console.log(e.response.headers['retry-after']);
+            await delay(e.response.headers['retry-after']);
             await getResource(); // keep spamming until you get a response
           }
           return await related.data.artists;
