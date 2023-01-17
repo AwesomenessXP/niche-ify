@@ -133,9 +133,10 @@ export const PlaylistCell = ({ token }) => {
             });
           } catch (e) {
             // ***** USE "headers" in axios to get "retry-after" time ********
-            console.log("ERROR: too many requests! Response from Spotify:")
-            console.log(e.response.headers['retry-after']);
-            await delay(e.response.headers['retry-after']);
+            let retryTime = e.response.headers['retry-after'];
+            console.log("ERROR: too many requests! Response from Spotify:");
+            console.log(retryTime);
+            await delay(retryTime);
             await getResource(); // keep spamming until you get a response
           }
           return await related.data.artists;
